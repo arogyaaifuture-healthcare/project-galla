@@ -1,0 +1,35 @@
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 2
+INSERT 0 1
+--- FAIL expected: same order item on a second ACTIVE bill
+ERROR:  duplicate key value violates unique constraint "ux_bill_lines_order_item_active"
+DETAIL:  Key (order_item_id)=(00000000-0000-0000-0000-0000000000b1) already exists.
+--- OK expected: after the first bill lines go inactive
+UPDATE 1
+INSERT 0 1
+--- FAIL expected: DINE_IN without a table
+ERROR:  new row for relation "orders" violates check constraint "orders_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000e2, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 2, 2026-11-27, DINE_IN, null, null, null, OPEN, null, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:02.282795+00, 2026-11-27 16:23:02.282795+00, null, 0, DIRECT, null, null, null, f, null, null, null, f, null).
+--- FAIL expected: duplicate email, different case
+ERROR:  duplicate key value violates unique constraint "ux_users_email"
+DETAIL:  Key (lower(email))=(a@b.c) already exists.
+--- FAIL expected: duplicate order number same outlet/day
+ERROR:  duplicate key value violates unique constraint "orders_outlet_id_business_date_order_no_key"
+DETAIL:  Key (outlet_id, business_date, order_no)=(00000000-0000-0000-0000-0000000000a1, 2026-11-27, 1) already exists.
+--- FAIL expected: negative price
+ERROR:  new row for relation "menu_items" violates check constraint "menu_items_base_price_check"
+DETAIL:  Failing row contains (4f31bae5-42f6-4da7-8809-51a0b927b0f3, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-0000000000c1, Bad, null, null, -1.00, null, NA, null, null, t, t, 0, 2026-11-27 16:23:02.283814+00, 2026-11-27 16:23:02.283814+00, 0, null, 0.00, STANDARD, null, {}).
+--- FAIL expected: payment amount 0
+ERROR:  new row for relation "payments" violates check constraint "payments_amount_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000a9, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000b12, CASH, 0.00, null, null, SUCCESS, MANUAL, null, null, null, null, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:02.284194+00, null, null, null, null, f, null, null, 0.00, null, null, null).
+--- FAIL expected: invalid role
+ERROR:  new row for relation "users" violates check constraint "users_role_check"
+DETAIL:  Failing row contains (cbe4b634-5cce-459c-99df-fac3d164eec3, 00000000-0000-0000-0000-000000000001, z@z.z, x, Z, null, ADMIN, null, ACTIVE, 0, null, null, 2026-11-27 16:23:02.285779+00, 2026-11-27 16:23:02.285779+00, 0, f, en).
+--- OK expected: INVENTORY role (added in V008)
+INSERT 0 1

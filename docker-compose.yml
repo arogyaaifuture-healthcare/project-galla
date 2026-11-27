@@ -1,0 +1,5 @@
+services:
+  db: { image: postgres:16, environment: { POSTGRES_DB: galla, POSTGRES_USER: galla, POSTGRES_PASSWORD: galla }, ports: ["5432:5432"], healthcheck: { test: ["CMD-SHELL","pg_isready -U galla"], interval: 5s, retries: 10 } }
+  redis: { image: redis:7-alpine }
+  api: { build: ./backend, environment: { DB_URL: "jdbc:postgresql://db:5432/galla" }, depends_on: { db: { condition: service_healthy } }, ports: ["8080:8080"] }
+  web: { build: ./frontend, ports: ["5173:80"], depends_on: [api] }

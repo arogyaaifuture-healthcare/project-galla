@@ -1,0 +1,193 @@
+--- OK expected: loyalty program with defaults
+INSERT 0 1
+--- FAIL expected: spend_per_point 0
+ERROR:  new row for relation "loyalty_programs" violates check constraint "loyalty_programs_spend_per_point_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-000000000001, t, 0.00, GRAND_TOTAL, 1.0000, 100, 50.00, null, 2026-11-27 16:23:17.499115+00, 0).
+--- FAIL expected: max_redeem_percent 101
+ERROR:  new row for relation "loyalty_programs" violates check constraint "loyalty_programs_max_redeem_percent_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-000000000001, t, 100.00, GRAND_TOTAL, 1.0000, 100, 101.00, null, 2026-11-27 16:23:17.499115+00, 0).
+--- FAIL expected: expiry below 30 days
+ERROR:  new row for relation "loyalty_programs" violates check constraint "loyalty_programs_expiry_days_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-000000000001, t, 100.00, GRAND_TOTAL, 1.0000, 100, 50.00, 10, 2026-11-27 16:23:17.499115+00, 0).
+--- OK expected: earn 50 points on bill 1
+INSERT 0 1
+--- FAIL expected: second earn on the same bill
+ERROR:  duplicate key value violates unique constraint "ux_loyalty_one_earn_per_bill"
+DETAIL:  Key (bill_id)=(00000000-0000-0000-0000-000000000801) already exists.
+--- FAIL expected: negative earn
+ERROR:  new row for relation "loyalty_ledger" violates check constraint "loyalty_ledger_check"
+DETAIL:  Failing row contains (48f2a4a0-24bb-428e-9b2f-45a49bb3d107, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-00000000c701, null, EARN, -5, 00000000-0000-0000-0000-000000000802, null, null, null, null, 2026-11-27 16:23:17.506318+00).
+--- FAIL expected: earn without a bill
+ERROR:  new row for relation "loyalty_ledger" violates check constraint "loyalty_ledger_check1"
+DETAIL:  Failing row contains (997a900c-fb86-457f-bf03-a9a55bcf0477, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-00000000c701, null, EARN, 5, null, null, null, null, null, 2026-11-27 16:23:17.506669+00).
+--- FAIL expected: zero points
+ERROR:  new row for relation "loyalty_ledger" violates check constraint "loyalty_ledger_check"
+DETAIL:  Failing row contains (87e28b47-e313-4773-84c2-baf29225640e, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-00000000c701, null, EARN, 0, 00000000-0000-0000-0000-000000000802, null, null, null, null, 2026-11-27 16:23:17.506886+00).
+--- OK expected: redeem 20 points on bill 1 (balance 50)
+INSERT 0 1
+--- FAIL expected: second redeem on the same bill
+ERROR:  duplicate key value violates unique constraint "ux_loyalty_one_redeem_per_bill"
+DETAIL:  Key (bill_id)=(00000000-0000-0000-0000-000000000801) already exists.
+--- FAIL expected: redeem more than the balance (30 left)
+ERROR:  LOYALTY_INSUFFICIENT_POINTS
+CONTEXT:  PL/pgSQL function fn_loyalty_ledger_guard() line 12 at RAISE
+--- OK expected: redeem exactly the remaining 30
+INSERT 0 1
+--- FAIL expected: positive redeem
+ERROR:  new row for relation "loyalty_ledger" violates check constraint "loyalty_ledger_check"
+DETAIL:  Failing row contains (dc3c930c-ecff-4e2f-90ea-3a710a3c83bd, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-00000000c702, null, REDEEM, 5, 00000000-0000-0000-0000-000000000803, null, null, null, null, 2026-11-27 16:23:17.509734+00).
+--- FAIL expected: adjustment without a reason
+ERROR:  new row for relation "loyalty_ledger" violates check constraint "loyalty_ledger_check3"
+DETAIL:  Failing row contains (453c52f8-0115-4b87-99a6-4930329ecfce, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-00000000c702, null, ADJUST, 10, null, null, null, null, 00000000-0000-0000-0000-0000000000f7, 2026-11-27 16:23:17.509986+00).
+--- FAIL expected: adjustment without the staff user
+ERROR:  new row for relation "loyalty_ledger" violates check constraint "loyalty_ledger_check3"
+DETAIL:  Failing row contains (a1fd5e66-7d19-4682-acb7-42097d94ec79, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-00000000c702, null, ADJUST, 10, null, null, null, goodwill, null, 2026-11-27 16:23:17.510158+00).
+--- OK expected: adjustment with reason and user
+INSERT 0 1
+--- FAIL expected: expires_at on a non-earn entry
+ERROR:  new row for relation "loyalty_ledger" violates check constraint "loyalty_ledger_check4"
+DETAIL:  Failing row contains (da9202c3-2692-4e25-af7b-19d392f9d0e7, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-00000000c702, null, ADJUST, 5, null, null, 2026-11-27 16:23:17.511069+00, x, 00000000-0000-0000-0000-0000000000f7, 2026-11-27 16:23:17.511069+00).
+--- OK expected: earn with an expiry date
+INSERT 0 1
+--- OK expected: expire 5 of 50
+INSERT 0 1
+--- FAIL expected: expire more than the balance
+ERROR:  LOYALTY_INSUFFICIENT_POINTS
+CONTEXT:  PL/pgSQL function fn_loyalty_ledger_guard() line 12 at RAISE
+--- OK expected: reversal of an earn may take the balance below zero (customer already spent the points)
+INSERT 0 1
+--- FAIL expected: restore without a bill or credit note
+ERROR:  new row for relation "loyalty_ledger" violates check constraint "loyalty_ledger_check2"
+DETAIL:  Failing row contains (8a46c273-335b-406e-b3ff-37e28d81a776, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-00000000c701, null, RESTORE_REDEEM, 10, null, null, null, null, null, 2026-11-27 16:23:17.513313+00).
+--- FAIL expected: ledger row of another tenant for this customer
+ERROR:  LOYALTY_CROSS_TENANT
+CONTEXT:  PL/pgSQL function fn_loyalty_ledger_guard() line 9 at RAISE
+--- FAIL expected: ledger rows cannot be updated
+ERROR:  LOYALTY_LEDGER_APPEND_ONLY
+CONTEXT:  PL/pgSQL function fn_loyalty_ledger_guard() line 5 at RAISE
+--- FAIL expected: ledger rows cannot be deleted
+ERROR:  LOYALTY_LEDGER_APPEND_ONLY
+CONTEXT:  PL/pgSQL function fn_loyalty_ledger_guard() line 5 at RAISE
+--- OK expected: balance of customer 1 = 50-20-30-10 = -10
+ balance 
+---------
+     -10
+(1 row)
+
+--- OK expected: loyalty payment with customer and points
+INSERT 0 1
+--- FAIL expected: LOYALTY payment without points
+ERROR:  new row for relation "payments" violates check constraint "payments_loyalty_shape"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-00000000e702, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000801, LOYALTY, 5.00, null, null, SUCCESS, MANUAL, null, null, null, null, null, 00000000-0000-0000-0000-0000000000f7, 2026-11-27 16:23:17.515832+00, null, null, null, null, f, null, null, 0.00, null, 00000000-0000-0000-0000-00000000c701, null, null, null).
+--- FAIL expected: points on a CASH payment
+ERROR:  new row for relation "payments" violates check constraint "payments_loyalty_shape"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-00000000e703, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000801, CASH, 5.00, null, null, SUCCESS, MANUAL, null, null, null, null, null, 00000000-0000-0000-0000-0000000000f7, 2026-11-27 16:23:17.516157+00, null, null, null, null, f, null, null, 0.00, null, null, null, 5, null).
+--- FAIL expected: LOYALTY payment without a customer
+ERROR:  new row for relation "payments" violates check constraint "payments_loyalty_shape"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-00000000e704, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000801, LOYALTY, 5.00, null, null, SUCCESS, MANUAL, null, null, null, null, null, 00000000-0000-0000-0000-0000000000f7, 2026-11-27 16:23:17.516373+00, null, null, null, null, f, null, null, 0.00, null, null, null, 5, null).
+--- FAIL expected: LOYALTY payment with a tip
+ERROR:  new row for relation "payments" violates check constraint "payments_loyalty_shape"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-00000000e705, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000801, LOYALTY, 5.00, null, null, SUCCESS, MANUAL, null, null, null, null, null, 00000000-0000-0000-0000-0000000000f7, 2026-11-27 16:23:17.516564+00, null, null, null, null, f, null, null, 2.00, null, 00000000-0000-0000-0000-00000000c701, null, 5, null).
+--- OK expected: payment mode Paytm (UPI) for all outlets
+INSERT 0 1
+--- FAIL expected: same label in other case
+ERROR:  duplicate key value violates unique constraint "ux_payment_modes_label"
+DETAIL:  Key (tenant_id, COALESCE(outlet_id, '00000000-0000-0000-0000-000000000000'::uuid), lower(btrim(label)))=(00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-000000000000, paytm) already exists.
+--- FAIL expected: blank label
+ERROR:  new row for relation "payment_modes" violates check constraint "payment_modes_label_check"
+DETAIL:  Failing row contains (c90503ee-a623-47ff-b88f-d97cbb8fac35, 00000000-0000-0000-0000-000000000001, null,   , UPI, 0, t, 2026-11-27 16:23:17.517714+00).
+--- FAIL expected: unknown base method
+ERROR:  new row for relation "payment_modes" violates check constraint "payment_modes_base_method_check"
+DETAIL:  Failing row contains (5235875a-1949-4509-a4bd-f7bf6683aaac, 00000000-0000-0000-0000-000000000001, null, Wallet X, WALLET, 0, t, 2026-11-27 16:23:17.517829+00).
+--- OK expected: UPI payment tagged Paytm
+INSERT 0 1
+--- FAIL expected: CASH payment tagged with a UPI mode
+ERROR:  PAYMENT_MODE_METHOD_MISMATCH
+CONTEXT:  PL/pgSQL function fn_payment_mode_matches() line 8 at RAISE
+--- OK expected: mode that belongs to outlet 2 only
+INSERT 0 1
+--- FAIL expected: outlet-2 mode used at outlet 1
+ERROR:  PAYMENT_MODE_OTHER_OUTLET
+CONTEXT:  PL/pgSQL function fn_payment_mode_matches() line 7 at RAISE
+--- OK expected: deactivate a mode
+INSERT 0 1
+--- FAIL expected: inactive mode used for a new payment
+ERROR:  PAYMENT_MODE_INACTIVE
+CONTEXT:  PL/pgSQL function fn_payment_mode_matches() line 9 at RAISE
+--- OK expected: reservation of table T1 from 19:00 for 90 minutes
+INSERT 0 1
+--- FAIL expected: overlapping reservation for the same table (20:00)
+ERROR:  conflicting key value violates exclusion constraint "reservations_table_id_tstzrange_excl"
+DETAIL:  Key (table_id, tstzrange(reserved_for, reserved_until))=(00000000-0000-0000-0000-00000000b701, ["2026-12-01 14:30:00+00","2026-12-01 15:30:00+00")) conflicts with existing key (table_id, tstzrange(reserved_for, reserved_until))=(00000000-0000-0000-0000-00000000b701, ["2026-12-01 13:30:00+00","2026-12-01 15:00:00+00")).
+--- OK expected: back-to-back reservation starting at 20:30
+INSERT 0 1
+--- OK expected: same time on another table
+INSERT 0 1
+--- OK expected: a cancelled reservation frees its slot
+UPDATE 1
+INSERT 0 1
+--- FAIL expected: cancel without a reason
+ERROR:  new row for relation "reservations" violates check constraint "reservations_check2"
+DETAIL:  Failing row contains (cf899443-e4f8-4931-a024-44e144c52f27, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, null, Nair, null, 2, 00000000-0000-0000-0000-00000000b701, 2026-12-01 13:45:00+00, 60, 2026-12-01 14:45:00+00, CANCELLED, STAFF, null, null, null, null, 00000000-0000-0000-0000-0000000000f7, 2026-11-27 16:23:17.525192+00, 2026-11-27 16:23:17.525192+00, 0).
+--- FAIL expected: seated without seated_at
+ERROR:  new row for relation "reservations" violates check constraint "reservations_check1"
+DETAIL:  Failing row contains (cf899443-e4f8-4931-a024-44e144c52f27, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, null, Nair, null, 2, 00000000-0000-0000-0000-00000000b701, 2026-12-01 13:45:00+00, 60, 2026-12-01 14:45:00+00, SEATED, STAFF, null, null, null, null, 00000000-0000-0000-0000-0000000000f7, 2026-11-27 16:23:17.525192+00, 2026-11-27 16:23:17.525192+00, 0).
+--- OK expected: seated with time and order
+UPDATE 1
+--- FAIL expected: party size 0
+ERROR:  new row for relation "reservations" violates check constraint "reservations_party_size_check"
+DETAIL:  Failing row contains (150b157f-a1d9-44ae-9e63-8da135373757, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, null, Z, null, 0, null, 2026-12-02 13:30:00+00, 90, 2026-12-02 15:00:00+00, BOOKED, STAFF, null, null, null, null, 00000000-0000-0000-0000-0000000000f7, 2026-11-27 16:23:17.527665+00, 2026-11-27 16:23:17.527665+00, 0).
+--- FAIL expected: duration 5 minutes
+ERROR:  new row for relation "reservations" violates check constraint "reservations_duration_minutes_check"
+DETAIL:  Failing row contains (2f135b6a-d030-40fb-aa3f-3a5186988af2, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, null, Z, null, 2, null, 2026-12-02 13:30:00+00, 5, 2026-12-02 13:35:00+00, BOOKED, STAFF, null, null, null, null, 00000000-0000-0000-0000-0000000000f7, 2026-11-27 16:23:17.528065+00, 2026-11-27 16:23:17.528065+00, 0).
+--- FAIL expected: reserved_until does not match the duration
+ERROR:  new row for relation "reservations" violates check constraint "reservations_check"
+DETAIL:  Failing row contains (db4394b4-f2f5-4e78-a187-97b8d888b5d0, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, null, Z, null, 2, null, 2026-12-02 13:30:00+00, 90, 2026-12-02 14:00:00+00, BOOKED, STAFF, null, null, null, null, 00000000-0000-0000-0000-0000000000f7, 2026-11-27 16:23:17.528288+00, 2026-11-27 16:23:17.528288+00, 0).
+--- FAIL expected: table of another outlet
+ERROR:  RESERVATION_TABLE_OTHER_OUTLET
+CONTEXT:  PL/pgSQL function fn_reservation_table_outlet() line 6 at RAISE
+--- FAIL expected: invalid phone
+ERROR:  new row for relation "reservations" violates check constraint "reservations_guest_phone_check"
+DETAIL:  Failing row contains (abef3bf9-9a8e-4b78-8d79-2f5b20986b38, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, null, Z, 98-ab, 2, null, 2026-12-02 13:30:00+00, 90, 2026-12-02 15:00:00+00, BOOKED, STAFF, null, null, null, null, 00000000-0000-0000-0000-0000000000f7, 2026-11-27 16:23:17.528701+00, 2026-11-27 16:23:17.528701+00, 0).
+--- FAIL expected: unknown status
+ERROR:  new row for relation "reservations" violates check constraint "reservations_status_check"
+DETAIL:  Failing row contains (32375fa3-9279-4093-b3c4-695eea8b5a54, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, null, Z, null, 2, null, 2026-12-02 13:30:00+00, 90, 2026-12-02 15:00:00+00, LATE, STAFF, null, null, null, null, 00000000-0000-0000-0000-0000000000f7, 2026-11-27 16:23:17.528876+00, 2026-11-27 16:23:17.528876+00, 0).
+--- OK expected: waitlist entry without a table may overlap anything
+INSERT 0 1
+--- OK expected: token label A14 on order 1
+UPDATE 1
+--- FAIL expected: same token label on the same day and outlet
+ERROR:  duplicate key value violates unique constraint "ux_orders_token_per_day"
+DETAIL:  Key (outlet_id, business_date, token_label)=(00000000-0000-0000-0000-0000000000a1, 2026-11-01, A14) already exists.
+--- OK expected: same label on another business date
+UPDATE 1
+--- FAIL expected: lower-case token label
+ERROR:  new row for relation "orders" violates check constraint "orders_token_label_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-000000000703, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 3, 2026-11-01, TAKEAWAY, null, null, null, OPEN, null, null, 00000000-0000-0000-0000-0000000000f7, 2026-11-27 16:23:17.459799+00, 2026-11-27 16:23:17.459799+00, null, 0, DIRECT, null, null, null, f, null, null, null, f, null, a15).
+--- FAIL expected: token label with 6 digits
+ERROR:  new row for relation "orders" violates check constraint "orders_token_label_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-000000000703, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 3, 2026-11-01, TAKEAWAY, null, null, null, OPEN, null, null, 00000000-0000-0000-0000-0000000000f7, 2026-11-27 16:23:17.459799+00, 2026-11-27 16:23:17.459799+00, null, 0, DIRECT, null, null, null, f, null, null, null, f, null, 123456).
+--- OK expected: plain numeric token
+UPDATE 1
+--- FAIL expected: unknown token mode
+ERROR:  new row for relation "outlets" violates check constraint "outlets_token_mode_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000001, O1, Out, null, null, null, null, null, IN, null, null, Asia/Kolkata, INR, Rs, null, null, null, null, null, null, null, f, 0.00, null, NEAREST_1, 4, 4, f, null, {}, ACTIVE, 2026-11-27 16:23:16.11602+00, 2026-11-27 16:23:16.11602+00, 0, 0.00, null, null, NONE, 0.00, null, null, 1.00, null, t, 90, t, 72, NONE, 0.00, {TAKEAWAY,DELIVERY}, null, ZERO_TAX, f, 500.00, t, f, f, null, null, null, null, UNREGISTERED, null, BILL, OUTLET_STATE, f, en, SOMETIMES).
+--- OK expected: token mode TAKEAWAY_DELIVERY
+UPDATE 1
+--- OK expected: counter upsert gives 1
+ last_no 
+---------
+       1
+(1 row)
+
+INSERT 0 1
+--- OK expected: counter upsert gives 2
+ last_no 
+---------
+       2
+(1 row)
+
+INSERT 0 1
+--- FAIL expected: counter above 99999
+ERROR:  new row for relation "token_counters" violates check constraint "token_counters_last_no_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000a1, 2026-11-01, 100000).

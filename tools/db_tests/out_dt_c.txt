@@ -1,0 +1,791 @@
+--- OK expected: seeded units exist (6 convertible + 7 pack)
+DO
+--- FAIL expected: PACK unit with a factor
+ERROR:  new row for relation "inventory_units" violates check constraint "inventory_units_check"
+DETAIL:  Failing row contains (sack, sack, PACK, 50.000000, g).
+--- FAIL expected: MASS unit without factor
+ERROR:  new row for relation "inventory_units" violates check constraint "inventory_units_check"
+DETAIL:  Failing row contains (mg, milligram, MASS, null, null).
+--- FAIL expected: zero factor
+ERROR:  new row for relation "inventory_units" violates check constraint "inventory_units_factor_to_base_check"
+DETAIL:  Failing row contains (mg, milligram, MASS, 0.000000, g).
+--- FAIL expected: invalid family
+ERROR:  new row for relation "inventory_units" violates check constraint "inventory_units_check"
+DETAIL:  Failing row contains (x, x, AREA, null, null).
+--- OK expected: category
+INSERT 0 1
+--- FAIL expected: duplicate category name
+ERROR:  duplicate key value violates unique constraint "stock_categories_tenant_id_name_key"
+DETAIL:  Key (tenant_id, name)=(00000000-0000-0000-0000-000000000001, Dairy) already exists.
+--- FAIL expected: blank category name
+ERROR:  new row for relation "stock_categories" violates check constraint "stock_categories_name_check"
+DETAIL:  Failing row contains (bbedb61b-baad-41e1-83f2-c00cc14de9e3, 00000000-0000-0000-0000-000000000001,   , 0, t).
+--- OK expected: vendor GSTIN stored as text, NOT validated
+UPDATE 1
+--- FAIL expected: GSTIN longer than 20 characters
+ERROR:  new row for relation "vendors" violates check constraint "vendors_gstin_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-000000000da1, 00000000-0000-0000-0000-000000000001, Fresh Dairy, null, null, null, null, 123456789012345678901, 0, null, t, 2026-11-27 16:23:11.258368+00, 2026-11-27 16:23:11.258368+00, 0).
+--- FAIL expected: duplicate vendor name (case-insensitive)
+ERROR:  duplicate key value violates unique constraint "ux_vendors_name"
+DETAIL:  Key (tenant_id, lower(name))=(00000000-0000-0000-0000-000000000001, fresh dairy) already exists.
+--- FAIL expected: payment terms 400 days
+ERROR:  new row for relation "vendors" violates check constraint "vendors_payment_terms_days_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-000000000da1, 00000000-0000-0000-0000-000000000001, Fresh Dairy, null, null, null, null, not-a-real-gstin, 400, null, t, 2026-11-27 16:23:11.258368+00, 2026-11-27 16:23:11.258368+00, 0).
+--- OK expected: same vendor name in another tenant
+INSERT 0 1
+--- OK expected: item with PACK purchase unit (crate of 24)
+ purchase_to_base 
+------------------
+        24.000000
+(1 row)
+
+--- FAIL expected: base unit kg (must be g, ml or pcs)
+ERROR:  UNIT_FACTOR_MISMATCH: kg must be 1000.000000 base units
+CONTEXT:  PL/pgSQL function trg_stock_item_units() line 11 at RAISE
+--- FAIL expected: purchase unit litre for a gram item
+ERROR:  UNIT_FAMILY_MISMATCH: purchase unit l cannot convert to base unit g
+CONTEXT:  PL/pgSQL function trg_stock_item_units() line 8 at RAISE
+--- FAIL expected: purchase unit kg with factor 100
+ERROR:  UNIT_FACTOR_MISMATCH: kg must be 1000.000000 base units
+CONTEXT:  PL/pgSQL function trg_stock_item_units() line 11 at RAISE
+--- OK expected: purchase unit dozen for a piece item with factor 12
+INSERT 0 1
+--- FAIL expected: zero purchase_to_base for a PACK unit
+ERROR:  new row for relation "stock_items" violates check constraint "stock_items_purchase_to_base_check"
+DETAIL:  Failing row contains (a5551e59-201a-47c9-978f-029acd4025c3, 00000000-0000-0000-0000-000000000001, null, D, null, null, RAW, pcs, box, 0.000000, null, 0.0000, null, t, null, t, 2026-11-27 16:23:11.307193+00, 2026-11-27 16:23:11.307193+00, 0).
+--- FAIL expected: duplicate item name (case-insensitive)
+ERROR:  duplicate key value violates unique constraint "ux_stock_items_name"
+DETAIL:  Key (tenant_id, lower(name))=(00000000-0000-0000-0000-000000000001, paneer) already exists.
+--- OK expected: item with SKU
+UPDATE 1
+--- FAIL expected: duplicate SKU (case-insensitive)
+ERROR:  duplicate key value violates unique constraint "ux_stock_items_sku"
+DETAIL:  Key (tenant_id, lower(sku))=(00000000-0000-0000-0000-000000000001, pn-01) already exists.
+--- FAIL expected: duplicate barcode
+ERROR:  duplicate key value violates unique constraint "ux_stock_items_barcode"
+DETAIL:  Key (tenant_id, barcode)=(00000000-0000-0000-0000-000000000001, 8901234567890) already exists.
+--- FAIL expected: par level below reorder level
+ERROR:  new row for relation "stock_items" violates check constraint "stock_items_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000005e1, 00000000-0000-0000-0000-000000000001, null, Paneer, PN-01, 8901234567890, RAW, g, kg, 1000.000000, null, 2000.0000, 100.0000, t, null, t, 2026-11-27 16:23:11.254967+00, 2026-11-27 16:23:11.254967+00, 0).
+--- FAIL expected: negative reorder level
+ERROR:  new row for relation "stock_items" violates check constraint "stock_items_reorder_level_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000005e1, 00000000-0000-0000-0000-000000000001, null, Paneer, PN-01, 8901234567890, RAW, g, kg, 1000.000000, null, -1.0000, 10000.0000, t, null, t, 2026-11-27 16:23:11.254967+00, 2026-11-27 16:23:11.254967+00, 0).
+--- FAIL expected: invalid item kind
+ERROR:  new row for relation "stock_items" violates check constraint "stock_items_item_kind_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000005e1, 00000000-0000-0000-0000-000000000001, null, Paneer, PN-01, 8901234567890, SERVICE, g, kg, 1000.000000, null, 2000.0000, 10000.0000, t, null, t, 2026-11-27 16:23:11.254967+00, 2026-11-27 16:23:11.254967+00, 0).
+--- FAIL expected: changing the purchase unit to a mismatching factor later
+ERROR:  UNIT_FACTOR_MISMATCH: kg must be 1000.000000 base units
+CONTEXT:  PL/pgSQL function trg_stock_item_units() line 11 at RAISE
+--- OK expected: outlet settings row
+INSERT 0 1
+--- FAIL expected: invalid negative-stock policy
+ERROR:  new row for relation "inventory_settings" violates check constraint "inventory_settings_negative_stock_policy_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000001, DENY, 500.00, 10.00, t, {}, 30, t, 2026-11-27 16:23:11.309702+00).
+--- FAIL expected: dead-stock days below 7
+ERROR:  new row for relation "inventory_settings" violates check constraint "inventory_settings_dead_stock_days_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000001, ALLOW, 500.00, 10.00, t, {}, 3, t, 2026-11-27 16:23:11.309702+00).
+--- FAIL expected: counter kind not in list
+ERROR:  new row for relation "inventory_counters" violates check constraint "inventory_counters_kind_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000a1, XYZ, 0).
+--- OK expected: counter
+INSERT 0 1
+--- FAIL expected: direct insert of a level with stock
+ERROR:  STOCK_LEVEL_DIRECT_CHANGE: a new level starts at zero
+CONTEXT:  PL/pgSQL function trg_stock_levels_guard() line 10 at RAISE
+--- OK expected: ledger entry creates the level (OPENING 2000 g at 0.30)
+                t_mov                 
+--------------------------------------
+ 38031371-a20e-4556-b988-b8c033e18fd3
+(1 row)
+
+--- FAIL expected: direct update of on_hand
+ERROR:  STOCK_LEVEL_DIRECT_CHANGE: on-hand and cost change only through stock_movements
+CONTEXT:  PL/pgSQL function trg_stock_levels_guard() line 16 at RAISE
+--- FAIL expected: direct update of avg_cost
+ERROR:  STOCK_LEVEL_DIRECT_CHANGE: on-hand and cost change only through stock_movements
+CONTEXT:  PL/pgSQL function trg_stock_levels_guard() line 16 at RAISE
+--- FAIL expected: delete of a level
+ERROR:  STOCK_LEVEL_DIRECT_CHANGE
+CONTEXT:  PL/pgSQL function trg_stock_levels_guard() line 6 at RAISE
+--- OK expected: reorder override is allowed to change directly
+UPDATE 1
+--- FAIL expected: negative reorder override
+ERROR:  new row for relation "stock_levels" violates check constraint "stock_levels_reorder_level_override_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-0000000005e5, 00000000-0000-0000-0000-000000000001, 2000.0000, 0.300000, t, null, null, 2026-11-23 04:30:00+00, -5.0000, null, null).
+--- OK expected: draft GRN g1 with a line, then posted
+INSERT 0 1
+INSERT 0 1
+UPDATE 1
+--- FAIL expected: GRN total does not equal subtotal+tax+other+round_off
+ERROR:  new row for relation "goods_receipts" violates check constraint "goods_receipts_check"
+DETAIL:  Failing row contains (913506d8-3d04-4357-b395-4b3eb239be58, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000da1, null, GRN-X1, DRAFT, null, null, null, 2026-11-27 16:23:11.322487+00, 100.00, 5.00, 0.00, 0.00, 100.00, null, null, null, null, 00000000-0000-0000-0000-0000000000f2, null, null, null, null, 0).
+--- FAIL expected: posting without invoice number
+ERROR:  new row for relation "goods_receipts" violates check constraint "goods_receipts_check1"
+DETAIL:  Failing row contains (9282621f-572d-4775-b715-988dc9733475, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000da1, null, GRN-X2, POSTED, null, null, null, 2026-11-27 16:23:11.322771+00, 100.00, 0.00, 0.00, 0.00, 100.00, null, null, null, null, 00000000-0000-0000-0000-0000000000f2, 00000000-0000-0000-0000-0000000000f2, 2026-11-27 16:23:11.322771+00, null, null, 0).
+--- FAIL expected: duplicate invoice for the same vendor (case and spaces ignored)
+ERROR:  duplicate key value violates unique constraint "ux_grn_vendor_invoice"
+DETAIL:  Key (tenant_id, vendor_id, lower(btrim(invoice_number)))=(00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-000000000da1, inv-1) already exists.
+--- FAIL expected: duplicate invoice for the same vendor at another outlet
+ERROR:  duplicate key value violates unique constraint "ux_grn_vendor_invoice"
+DETAIL:  Key (tenant_id, vendor_id, lower(btrim(invoice_number)))=(00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-000000000da1, inv-1) already exists.
+--- OK expected: same invoice number from another vendor
+INSERT 0 1
+--- FAIL expected: duplicate GRN number at the outlet
+ERROR:  duplicate key value violates unique constraint "goods_receipts_outlet_id_grn_number_key"
+DETAIL:  Key (outlet_id, grn_number)=(00000000-0000-0000-0000-0000000000a1, GRN-000001) already exists.
+--- FAIL expected: attachment of an unsupported type
+ERROR:  new row for relation "goods_receipts" violates check constraint "goods_receipts_attachment_content_type_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000009a3, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000da2, null, GRN-000003, DRAFT, INV-1, 2026-11-21, null, 2026-11-27 16:23:11.323465+00, 100.00, 0.00, 0.00, 0.00, 100.00, k/a.exe, application/x-msdownload, 100, null, 00000000-0000-0000-0000-0000000000f2, null, null, null, null, 0).
+--- FAIL expected: attachment bigger than 5 MB
+ERROR:  new row for relation "goods_receipts" violates check constraint "goods_receipts_attachment_size_bytes_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000009a3, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000da2, null, GRN-000003, DRAFT, INV-1, 2026-11-21, null, 2026-11-27 16:23:11.323465+00, 100.00, 0.00, 0.00, 0.00, 100.00, k/a.pdf, application/pdf, 5242881, null, 00000000-0000-0000-0000-0000000000f2, null, null, null, null, 0).
+--- FAIL expected: attachment key without content type
+ERROR:  new row for relation "goods_receipts" violates check constraint "goods_receipts_check3"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000009a3, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000da2, null, GRN-000003, DRAFT, INV-1, 2026-11-21, null, 2026-11-27 16:23:11.323465+00, 100.00, 0.00, 0.00, 0.00, 100.00, k/a.pdf, null, null, null, 00000000-0000-0000-0000-0000000000f2, null, null, null, null, 0).
+--- OK expected: PDF attachment
+UPDATE 1
+--- FAIL expected: GRN line qty_base inconsistent with purchase_to_base
+ERROR:  new row for relation "goods_receipt_lines" violates check constraint "goods_receipt_lines_check"
+DETAIL:  Failing row contains (a1544d9d-52ee-43cd-b02c-20d7c97a11e2, 00000000-0000-0000-0000-0000000009a3, null, 00000000-0000-0000-0000-0000000005e2, 2.0000, l, 1000.000000, 1999.0000, 50.000000, 0.050000, 100.00, 0.00, null, f).
+--- FAIL expected: GRN line unit_cost_base inconsistent with price
+ERROR:  new row for relation "goods_receipt_lines" violates check constraint "goods_receipt_lines_check1"
+DETAIL:  Failing row contains (72c33b73-752d-40ce-a305-9cc4e37824e5, 00000000-0000-0000-0000-0000000009a3, null, 00000000-0000-0000-0000-0000000005e2, 2.0000, l, 1000.000000, 2000.0000, 50.000000, 0.060000, 100.00, 0.00, null, f).
+--- FAIL expected: GRN line amount inconsistent with qty x price
+ERROR:  new row for relation "goods_receipt_lines" violates check constraint "goods_receipt_lines_check2"
+DETAIL:  Failing row contains (1060cd8e-22c6-4581-b28a-3c8e7f103060, 00000000-0000-0000-0000-0000000009a3, null, 00000000-0000-0000-0000-0000000005e2, 2.0000, l, 1000.000000, 2000.0000, 50.000000, 0.050000, 99.00, 0.00, null, f).
+--- OK expected: valid line on a draft GRN
+INSERT 0 1
+--- FAIL expected: same item twice on one GRN
+ERROR:  duplicate key value violates unique constraint "goods_receipt_lines_grn_id_stock_item_id_key"
+DETAIL:  Key (grn_id, stock_item_id)=(00000000-0000-0000-0000-0000000009a3, 00000000-0000-0000-0000-0000000005e2) already exists.
+--- FAIL expected: line added to a posted GRN
+ERROR:  GRN_NOT_DRAFT: lines of a posted or void receipt cannot change
+CONTEXT:  PL/pgSQL function trg_grn_lines_draft_only() line 5 at RAISE
+--- FAIL expected: line of a posted GRN edited
+ERROR:  GRN_NOT_DRAFT: lines of a posted or void receipt cannot change
+CONTEXT:  PL/pgSQL function trg_grn_lines_draft_only() line 5 at RAISE
+--- FAIL expected: posted GRN total edited
+ERROR:  GRN_POSTED_IMMUTABLE: a posted receipt can only be voided
+CONTEXT:  PL/pgSQL function trg_grn_header_rules() line 15 at RAISE
+--- FAIL expected: posted GRN deleted
+ERROR:  GRN_NOT_DRAFT: only a draft receipt can be deleted
+CONTEXT:  PL/pgSQL function trg_grn_header_rules() line 4 at RAISE
+--- OK expected: PURCHASE movement 10 kg at 0.4 per g
+                t_mov                 
+--------------------------------------
+ 662162d8-4aaf-4046-b10c-784712d007d6
+(1 row)
+
+--- FAIL expected: PURCHASE without GRN reference
+ERROR:  new row for relation "stock_movements" violates check constraint "stock_movements_check8"
+DETAIL:  Failing row contains (0dc76a67-89c5-4886-9e25-aac896467248, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-0000000005e1, PURCHASE, 100.0000, 0.400000, ACTUAL, f, 40.00, 2026-11-23 04:30:00+00, 2026-11-23, 2026-11-27 16:23:11.329941+00, null, null, null, null, null, null, null, t-p-noref).
+CONTEXT:  SQL statement "INSERT INTO stock_movements(tenant_id,outlet_id,stock_item_id,kind,quantity_base,unit_cost,cost_basis,occurred_at,business_date,reason_code,
+                              ref_type,ref_id,consumption_id,reverses_movement_id,dedupe_key)
+  VALUES (tn,p_outlet,p_item,p_kind,p_qty,c,b,p_at,p_date,p_reason,p_ref_type,p_ref_id,p_cons,p_rev,p_key) RETURNING id"
+PL/pgSQL function t_mov(uuid,uuid,text,numeric,text,text,uuid,numeric,text,date,text,uuid,uuid,timestamp with time zone) line 13 at SQL statement
+--- FAIL expected: PURCHASE with cost basis other than ACTUAL
+ERROR:  new row for relation "stock_movements" violates check constraint "stock_movements_check3"
+DETAIL:  Failing row contains (d12d2d1e-9408-4932-966f-283d5bf75f87, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-0000000005e1, PURCHASE, 100.0000, 0.400000, AVERAGE, f, 40.00, 2026-11-23 04:30:00+00, 2026-11-23, 2026-11-27 16:23:11.330596+00, null, null, null, GRN, 5e852f3d-ff38-4585-8dc8-28ec9457448a, null, null, t-p-avg).
+CONTEXT:  SQL statement "INSERT INTO stock_movements(tenant_id,outlet_id,stock_item_id,kind,quantity_base,unit_cost,cost_basis,occurred_at,business_date,reason_code,
+                              ref_type,ref_id,consumption_id,reverses_movement_id,dedupe_key)
+  VALUES (tn,p_outlet,p_item,p_kind,p_qty,c,b,p_at,p_date,p_reason,p_ref_type,p_ref_id,p_cons,p_rev,p_key) RETURNING id"
+PL/pgSQL function t_mov(uuid,uuid,text,numeric,text,text,uuid,numeric,text,date,text,uuid,uuid,timestamp with time zone) line 13 at SQL statement
+--- OK expected: second purchase 5000 g at 0.50 gives average 0.433333 and 15000 on hand
+                t_mov                 
+--------------------------------------
+ d86914e3-e3c4-4588-9fb6-7a14c199cd26
+(1 row)
+
+DO
+--- FAIL expected: negative price
+ERROR:  new row for relation "stock_movements" violates check constraint "stock_movements_unit_cost_check"
+DETAIL:  Failing row contains (edb38062-f054-4833-9c71-5c178f2abd80, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-0000000005e1, PURCHASE, 100.0000, -1.000000, ACTUAL, f, -100.00, 2026-11-23 04:30:00+00, 2026-11-23, 2026-11-27 16:23:11.333287+00, null, null, null, GRN, c67ff092-1f6d-4be4-a25b-fd3df75b5392, null, null, t-p-neg).
+CONTEXT:  SQL statement "INSERT INTO stock_movements(tenant_id,outlet_id,stock_item_id,kind,quantity_base,unit_cost,cost_basis,occurred_at,business_date,reason_code,
+                              ref_type,ref_id,consumption_id,reverses_movement_id,dedupe_key)
+  VALUES (tn,p_outlet,p_item,p_kind,p_qty,c,b,p_at,p_date,p_reason,p_ref_type,p_ref_id,p_cons,p_rev,p_key) RETURNING id"
+PL/pgSQL function t_mov(uuid,uuid,text,numeric,text,text,uuid,numeric,text,date,text,uuid,uuid,timestamp with time zone) line 13 at SQL statement
+--- OK expected: older back-dated purchase (at the current average) does not replace last_purchase_cost
+                t_mov                 
+--------------------------------------
+ 265c0d7d-ba11-43bd-8233-b5fd7a5bfb0e
+(1 row)
+
+DO
+--- FAIL expected: zero quantity
+ERROR:  new row for relation "stock_movements" violates check constraint "stock_movements_check1"
+DETAIL:  Failing row contains (c38547a5-7ea6-45d1-b1ac-540cdfa851b3, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-0000000005e1, ADJUSTMENT, 0.0000, 0.000000, UNKNOWN, t, 0.00, 2026-11-27 16:23:11.335566+00, 2026-11-27, 2026-11-27 16:23:11.335566+00, null, OTHER, null, null, null, null, null, z).
+--- FAIL expected: OPENING with negative quantity
+ERROR:  new row for relation "stock_movements" violates check constraint "stock_movements_check"
+DETAIL:  Failing row contains (46047d30-aff1-4c40-8392-52db1c6801f1, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-0000000005e2, OPENING, -5.0000, 0.000000, UNKNOWN, t, 0.00, 2026-11-23 04:30:00+00, 2026-11-23, 2026-11-27 16:23:11.336115+00, null, null, null, null, null, null, null, t-neg-open).
+CONTEXT:  SQL statement "INSERT INTO stock_movements(tenant_id,outlet_id,stock_item_id,kind,quantity_base,unit_cost,cost_basis,occurred_at,business_date,reason_code,
+                              ref_type,ref_id,consumption_id,reverses_movement_id,dedupe_key)
+  VALUES (tn,p_outlet,p_item,p_kind,p_qty,c,b,p_at,p_date,p_reason,p_ref_type,p_ref_id,p_cons,p_rev,p_key) RETURNING id"
+PL/pgSQL function t_mov(uuid,uuid,text,numeric,text,text,uuid,numeric,text,date,text,uuid,uuid,timestamp with time zone) line 13 at SQL statement
+--- FAIL expected: SALE with positive quantity
+ERROR:  new row for relation "stock_movements" violates check constraint "stock_movements_check"
+DETAIL:  Failing row contains (b8b04a05-3698-4037-b2b0-09ffc9df814c, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-0000000005e5, SALE, 5.0000, 0.300000, AVERAGE, f, 1.50, 2026-11-23 04:30:00+00, 2026-11-23, 2026-11-27 16:23:11.337027+00, null, null, null, null, null, 00000000-0000-0000-0000-00000000c001, null, t-pos-sale).
+CONTEXT:  SQL statement "INSERT INTO stock_movements(tenant_id,outlet_id,stock_item_id,kind,quantity_base,unit_cost,cost_basis,occurred_at,business_date,reason_code,
+                              ref_type,ref_id,consumption_id,reverses_movement_id,dedupe_key)
+  VALUES (tn,p_outlet,p_item,p_kind,p_qty,c,b,p_at,p_date,p_reason,p_ref_type,p_ref_id,p_cons,p_rev,p_key) RETURNING id"
+PL/pgSQL function t_mov(uuid,uuid,text,numeric,text,text,uuid,numeric,text,date,text,uuid,uuid,timestamp with time zone) line 13 at SQL statement
+--- FAIL expected: WASTAGE without reason
+ERROR:  new row for relation "stock_movements" violates check constraint "stock_movements_check9"
+DETAIL:  Failing row contains (2056e38e-2d47-4a5a-b6ed-7c19f87227cf, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-0000000005e1, WASTAGE, -5.0000, 0.433333, AVERAGE, f, -2.17, 2026-11-23 04:30:00+00, 2026-11-23, 2026-11-27 16:23:11.337439+00, null, null, null, null, null, null, null, t-w-noreason).
+CONTEXT:  SQL statement "INSERT INTO stock_movements(tenant_id,outlet_id,stock_item_id,kind,quantity_base,unit_cost,cost_basis,occurred_at,business_date,reason_code,
+                              ref_type,ref_id,consumption_id,reverses_movement_id,dedupe_key)
+  VALUES (tn,p_outlet,p_item,p_kind,p_qty,c,b,p_at,p_date,p_reason,p_ref_type,p_ref_id,p_cons,p_rev,p_key) RETURNING id"
+PL/pgSQL function t_mov(uuid,uuid,text,numeric,text,text,uuid,numeric,text,date,text,uuid,uuid,timestamp with time zone) line 13 at SQL statement
+--- FAIL expected: SALE without consumption
+ERROR:  new row for relation "stock_movements" violates check constraint "stock_movements_check6"
+DETAIL:  Failing row contains (98fed471-d497-46a4-a4ab-1f2c7038d63e, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-0000000005e1, SALE, -5.0000, 0.433333, AVERAGE, f, -2.17, 2026-11-23 04:30:00+00, 2026-11-23, 2026-11-27 16:23:11.338358+00, null, null, null, null, null, null, null, t-sale-nocons).
+CONTEXT:  SQL statement "INSERT INTO stock_movements(tenant_id,outlet_id,stock_item_id,kind,quantity_base,unit_cost,cost_basis,occurred_at,business_date,reason_code,
+                              ref_type,ref_id,consumption_id,reverses_movement_id,dedupe_key)
+  VALUES (tn,p_outlet,p_item,p_kind,p_qty,c,b,p_at,p_date,p_reason,p_ref_type,p_ref_id,p_cons,p_rev,p_key) RETURNING id"
+PL/pgSQL function t_mov(uuid,uuid,text,numeric,text,text,uuid,numeric,text,date,text,uuid,uuid,timestamp with time zone) line 13 at SQL statement
+--- OK expected: consumption anchor for bill 1
+INSERT 0 1
+--- FAIL expected: second consumption for the same bill
+ERROR:  duplicate key value violates unique constraint "stock_consumptions_bill_id_key"
+DETAIL:  Key (bill_id)=(00000000-0000-0000-0000-000000000b11) already exists.
+--- FAIL expected: consumption with invalid status
+ERROR:  new row for relation "stock_consumptions" violates check constraint "stock_consumptions_status_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-00000000c001, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000b11, 2026-11-23, BILL_PAID, DONE, 80.00, 20.00, 2026-11-27 16:23:11.338878+00).
+--- FAIL expected: consumption with invalid source
+ERROR:  new row for relation "stock_consumptions" violates check constraint "stock_consumptions_source_check"
+DETAIL:  Failing row contains (698174ce-f8b9-43ea-bb6a-f821aee9e45f, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000b12, 2026-11-23, MANUAL, APPLIED, 0.00, 0.00, 2026-11-27 16:23:11.341016+00).
+--- OK expected: skip row (no recipe) recorded
+INSERT 0 1
+--- FAIL expected: skip row with invalid reason
+ERROR:  new row for relation "stock_consumption_skips" violates check constraint "stock_consumption_skips_reason_check"
+DETAIL:  Failing row contains (e5758cab-d7f7-44a0-ab06-2c4b7032dd16, 00000000-0000-0000-0000-00000000c001, 00000000-0000-0000-0000-000000000a12, null, 1.000, 20.00, FORGOT).
+--- FAIL expected: outflow with a caller-supplied wrong cost
+ERROR:  COST_BASIS_MISMATCH: expected AVERAGE at 0.433333
+CONTEXT:  PL/pgSQL function trg_stock_movements_before() line 20 at RAISE
+SQL statement "INSERT INTO stock_movements(tenant_id,outlet_id,stock_item_id,kind,quantity_base,unit_cost,cost_basis,occurred_at,business_date,reason_code,
+                              ref_type,ref_id,consumption_id,reverses_movement_id,dedupe_key)
+  VALUES (tn,p_outlet,p_item,p_kind,p_qty,c,b,p_at,p_date,p_reason,p_ref_type,p_ref_id,p_cons,p_rev,p_key) RETURNING id"
+PL/pgSQL function t_mov(uuid,uuid,text,numeric,text,text,uuid,numeric,text,date,text,uuid,uuid,timestamp with time zone) line 13 at SQL statement
+--- OK expected: SALE 1500 g at the average 0.433333 (value -650.00)
+                t_mov                 
+--------------------------------------
+ 39dae04e-898f-4a39-adb4-72365afbd736
+(1 row)
+
+DO
+--- FAIL expected: duplicate dedupe key (same sale applied twice)
+ERROR:  duplicate key value violates unique constraint "stock_movements_dedupe_key_key"
+DETAIL:  Key (dedupe_key)=(t-sale1) already exists.
+CONTEXT:  SQL statement "INSERT INTO stock_movements(tenant_id,outlet_id,stock_item_id,kind,quantity_base,unit_cost,cost_basis,occurred_at,business_date,reason_code,
+                              ref_type,ref_id,consumption_id,reverses_movement_id,dedupe_key)
+  VALUES (tn,p_outlet,p_item,p_kind,p_qty,c,b,p_at,p_date,p_reason,p_ref_type,p_ref_id,p_cons,p_rev,p_key) RETURNING id"
+PL/pgSQL function t_mov(uuid,uuid,text,numeric,text,text,uuid,numeric,text,date,text,uuid,uuid,timestamp with time zone) line 13 at SQL statement
+--- FAIL expected: reversal larger than the original sale
+ERROR:  REVERSAL_EXCEEDS_ORIGINAL
+CONTEXT:  PL/pgSQL function trg_stock_movements_before() line 39 at RAISE
+SQL statement "INSERT INTO stock_movements(tenant_id,outlet_id,stock_item_id,kind,quantity_base,unit_cost,cost_basis,occurred_at,business_date,reason_code,
+                              ref_type,ref_id,consumption_id,reverses_movement_id,dedupe_key)
+  VALUES (tn,p_outlet,p_item,p_kind,p_qty,c,b,p_at,p_date,p_reason,p_ref_type,p_ref_id,p_cons,p_rev,p_key) RETURNING id"
+PL/pgSQL function t_mov(uuid,uuid,text,numeric,text,text,uuid,numeric,text,date,text,uuid,uuid,timestamp with time zone) line 13 at SQL statement
+--- FAIL expected: reversal at a cost other than the original sale cost
+ERROR:  REVERSAL_COST_MISMATCH: must equal the original unit cost 0.433333
+CONTEXT:  PL/pgSQL function trg_stock_movements_before() line 42 at RAISE
+SQL statement "INSERT INTO stock_movements(tenant_id,outlet_id,stock_item_id,kind,quantity_base,unit_cost,cost_basis,occurred_at,business_date,reason_code,
+                              ref_type,ref_id,consumption_id,reverses_movement_id,dedupe_key)
+  VALUES (tn,p_outlet,p_item,p_kind,p_qty,c,b,p_at,p_date,p_reason,p_ref_type,p_ref_id,p_cons,p_rev,p_key) RETURNING id"
+PL/pgSQL function t_mov(uuid,uuid,text,numeric,text,text,uuid,numeric,text,date,text,uuid,uuid,timestamp with time zone) line 13 at SQL statement
+--- FAIL expected: reversal pointing at a PURCHASE
+ERROR:  REVERSAL_TARGET_INVALID
+CONTEXT:  PL/pgSQL function trg_stock_movements_before() line 34 at RAISE
+SQL statement "INSERT INTO stock_movements(tenant_id,outlet_id,stock_item_id,kind,quantity_base,unit_cost,cost_basis,occurred_at,business_date,reason_code,
+                              ref_type,ref_id,consumption_id,reverses_movement_id,dedupe_key)
+  VALUES (tn,p_outlet,p_item,p_kind,p_qty,c,b,p_at,p_date,p_reason,p_ref_type,p_ref_id,p_cons,p_rev,p_key) RETURNING id"
+PL/pgSQL function t_mov(uuid,uuid,text,numeric,text,text,uuid,numeric,text,date,text,uuid,uuid,timestamp with time zone) line 13 at SQL statement
+--- FAIL expected: reversal without a target
+ERROR:  REVERSAL_TARGET_INVALID
+CONTEXT:  PL/pgSQL function trg_stock_movements_before() line 34 at RAISE
+SQL statement "INSERT INTO stock_movements(tenant_id,outlet_id,stock_item_id,kind,quantity_base,unit_cost,cost_basis,occurred_at,business_date,reason_code,
+                              ref_type,ref_id,consumption_id,reverses_movement_id,dedupe_key)
+  VALUES (tn,p_outlet,p_item,p_kind,p_qty,c,b,p_at,p_date,p_reason,p_ref_type,p_ref_id,p_cons,p_rev,p_key) RETURNING id"
+PL/pgSQL function t_mov(uuid,uuid,text,numeric,text,text,uuid,numeric,text,date,text,uuid,uuid,timestamp with time zone) line 13 at SQL statement
+--- OK expected: proportional reversal of 40 percent (600 g) at the original unit cost
+                t_mov                 
+--------------------------------------
+ 6b91f620-b498-4e54-98b1-0635440c9b7f
+(1 row)
+
+--- OK expected: reversal of the remaining 900 g reaches exactly the original quantity and value
+                t_mov                 
+--------------------------------------
+ 6d08eaa2-4408-4ad2-a690-6165503cf995
+(1 row)
+
+DO
+--- FAIL expected: a further reversal after full reversal
+ERROR:  REVERSAL_EXCEEDS_ORIGINAL
+CONTEXT:  PL/pgSQL function trg_stock_movements_before() line 39 at RAISE
+SQL statement "INSERT INTO stock_movements(tenant_id,outlet_id,stock_item_id,kind,quantity_base,unit_cost,cost_basis,occurred_at,business_date,reason_code,
+                              ref_type,ref_id,consumption_id,reverses_movement_id,dedupe_key)
+  VALUES (tn,p_outlet,p_item,p_kind,p_qty,c,b,p_at,p_date,p_reason,p_ref_type,p_ref_id,p_cons,p_rev,p_key) RETURNING id"
+PL/pgSQL function t_mov(uuid,uuid,text,numeric,text,text,uuid,numeric,text,date,text,uuid,uuid,timestamp with time zone) line 13 at SQL statement
+--- FAIL expected: SALE_REVERSAL for another stock item than the original
+ERROR:  REVERSAL_TARGET_INVALID
+CONTEXT:  PL/pgSQL function trg_stock_movements_before() line 34 at RAISE
+SQL statement "INSERT INTO stock_movements(tenant_id,outlet_id,stock_item_id,kind,quantity_base,unit_cost,cost_basis,occurred_at,business_date,reason_code,
+                              ref_type,ref_id,consumption_id,reverses_movement_id,dedupe_key)
+  VALUES (tn,p_outlet,p_item,p_kind,p_qty,c,b,p_at,p_date,p_reason,p_ref_type,p_ref_id,p_cons,p_rev,p_key) RETURNING id"
+PL/pgSQL function t_mov(uuid,uuid,text,numeric,text,text,uuid,numeric,text,date,text,uuid,uuid,timestamp with time zone) line 13 at SQL statement
+--- FAIL expected: positive ADJUSTMENT at an invented cost
+ERROR:  new row for relation "stock_movements" violates check constraint "stock_movements_check5"
+DETAIL:  Failing row contains (f4933460-ff77-49fe-a080-95471b3687c8, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-0000000005e1, ADJUSTMENT, 10.0000, 9.000000, ACTUAL, f, 90.00, 2026-11-23 04:30:00+00, 2026-11-23, 2026-11-27 16:23:11.356124+00, null, FOUND_STOCK, null, null, null, null, null, t-adj-actual).
+CONTEXT:  SQL statement "INSERT INTO stock_movements(tenant_id,outlet_id,stock_item_id,kind,quantity_base,unit_cost,cost_basis,occurred_at,business_date,reason_code,
+                              ref_type,ref_id,consumption_id,reverses_movement_id,dedupe_key)
+  VALUES (tn,p_outlet,p_item,p_kind,p_qty,c,b,p_at,p_date,p_reason,p_ref_type,p_ref_id,p_cons,p_rev,p_key) RETURNING id"
+PL/pgSQL function t_mov(uuid,uuid,text,numeric,text,text,uuid,numeric,text,date,text,uuid,uuid,timestamp with time zone) line 13 at SQL statement
+--- FAIL expected: AVERAGE inflow at a cost other than the current average
+ERROR:  COST_BASIS_MISMATCH: AVERAGE inflow must use the current average 0.433333
+CONTEXT:  PL/pgSQL function trg_stock_movements_before() line 28 at RAISE
+SQL statement "INSERT INTO stock_movements(tenant_id,outlet_id,stock_item_id,kind,quantity_base,unit_cost,cost_basis,occurred_at,business_date,reason_code,
+                              ref_type,ref_id,consumption_id,reverses_movement_id,dedupe_key)
+  VALUES (tn,p_outlet,p_item,p_kind,p_qty,c,b,p_at,p_date,p_reason,p_ref_type,p_ref_id,p_cons,p_rev,p_key) RETURNING id"
+PL/pgSQL function t_mov(uuid,uuid,text,numeric,text,text,uuid,numeric,text,date,text,uuid,uuid,timestamp with time zone) line 13 at SQL statement
+--- OK expected: positive ADJUSTMENT at the current average does not move the average
+                t_mov                 
+--------------------------------------
+ 4b607304-452a-4882-bbb6-6de7e065ce88
+(1 row)
+
+DO
+--- FAIL expected: ADJUSTMENT with unknown reason missing
+ERROR:  new row for relation "stock_movements" violates check constraint "stock_movements_check9"
+DETAIL:  Failing row contains (5f815ae9-8274-4a93-9a49-9a784b2d22a6, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-0000000005e1, ADJUSTMENT, -1.0000, 0.433333, AVERAGE, f, -0.43, 2026-11-23 04:30:00+00, 2026-11-23, 2026-11-27 16:23:11.358484+00, null, null, null, null, null, null, null, t-adj-noreason).
+CONTEXT:  SQL statement "INSERT INTO stock_movements(tenant_id,outlet_id,stock_item_id,kind,quantity_base,unit_cost,cost_basis,occurred_at,business_date,reason_code,
+                              ref_type,ref_id,consumption_id,reverses_movement_id,dedupe_key)
+  VALUES (tn,p_outlet,p_item,p_kind,p_qty,c,b,p_at,p_date,p_reason,p_ref_type,p_ref_id,p_cons,p_rev,p_key) RETURNING id"
+PL/pgSQL function t_mov(uuid,uuid,text,numeric,text,text,uuid,numeric,text,date,text,uuid,uuid,timestamp with time zone) line 13 at SQL statement
+--- FAIL expected: UNKNOWN cost basis with a non-zero cost (cost rule)
+ERROR:  COST_BASIS_MISMATCH: expected UNKNOWN at 0
+CONTEXT:  PL/pgSQL function trg_stock_movements_before() line 20 at RAISE
+--- FAIL expected: invalid movement kind
+ERROR:  new row for relation "stock_movements" violates check constraint "stock_movements_check"
+DETAIL:  Failing row contains (7e03b45b-a54d-454f-8920-ba59e54e067c, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-0000000005e2, GIFT, -1.0000, 0.000000, UNKNOWN, t, 0.00, 2026-11-23 04:30:00+00, 2026-11-23, 2026-11-27 16:23:11.359578+00, null, null, null, null, null, null, null, t-gift).
+CONTEXT:  SQL statement "INSERT INTO stock_movements(tenant_id,outlet_id,stock_item_id,kind,quantity_base,unit_cost,cost_basis,occurred_at,business_date,reason_code,
+                              ref_type,ref_id,consumption_id,reverses_movement_id,dedupe_key)
+  VALUES (tn,p_outlet,p_item,p_kind,p_qty,c,b,p_at,p_date,p_reason,p_ref_type,p_ref_id,p_cons,p_rev,p_key) RETURNING id"
+PL/pgSQL function t_mov(uuid,uuid,text,numeric,text,text,uuid,numeric,text,date,text,uuid,uuid,timestamp with time zone) line 13 at SQL statement
+--- FAIL expected: invalid ref type
+ERROR:  new row for relation "stock_movements" violates check constraint "stock_movements_ref_type_check"
+DETAIL:  Failing row contains (ac66d1d8-de97-4f03-9c8a-a225bcc776d8, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-0000000005e1, WASTAGE, -1.0000, 0.433333, AVERAGE, f, -0.43, 2026-11-27 16:23:11.360119+00, 2026-11-27, 2026-11-27 16:23:11.360119+00, null, SPILL, null, EMAIL, null, null, null, t-ref).
+--- FAIL expected: stock item of another tenant
+ERROR:  STOCK_ITEM_TENANT_MISMATCH
+CONTEXT:  PL/pgSQL function trg_stock_movements_before() line 6 at RAISE
+SQL statement "INSERT INTO stock_movements(tenant_id,outlet_id,stock_item_id,kind,quantity_base,unit_cost,cost_basis,occurred_at,business_date,reason_code,
+                              ref_type,ref_id,consumption_id,reverses_movement_id,dedupe_key)
+  VALUES (tn,p_outlet,p_item,p_kind,p_qty,c,b,p_at,p_date,p_reason,p_ref_type,p_ref_id,p_cons,p_rev,p_key) RETURNING id"
+PL/pgSQL function t_mov(uuid,uuid,text,numeric,text,text,uuid,numeric,text,date,text,uuid,uuid,timestamp with time zone) line 13 at SQL statement
+--- FAIL expected: outlet of another tenant
+ERROR:  OUTLET_TENANT_MISMATCH
+CONTEXT:  PL/pgSQL function trg_stock_movements_before() line 9 at RAISE
+--- FAIL expected: movement for an item that is not tracked
+UPDATE 1
+ERROR:  ITEM_NOT_TRACKED
+CONTEXT:  PL/pgSQL function trg_stock_movements_before() line 7 at RAISE
+SQL statement "INSERT INTO stock_movements(tenant_id,outlet_id,stock_item_id,kind,quantity_base,unit_cost,cost_basis,occurred_at,business_date,reason_code,
+                              ref_type,ref_id,consumption_id,reverses_movement_id,dedupe_key)
+  VALUES (tn,p_outlet,p_item,p_kind,p_qty,c,b,p_at,p_date,p_reason,p_ref_type,p_ref_id,p_cons,p_rev,p_key) RETURNING id"
+PL/pgSQL function t_mov(uuid,uuid,text,numeric,text,text,uuid,numeric,text,date,text,uuid,uuid,timestamp with time zone) line 13 at SQL statement
+UPDATE 1
+--- OK expected: sale of an item never purchased: UNKNOWN cost at 0, flagged estimated, stock goes negative (policy ALLOW)
+                t_mov                 
+--------------------------------------
+ e593eacd-bcaa-4fbb-b9d5-81a4980244f3
+(1 row)
+
+DO
+--- OK expected: purchase after negative stock restarts the average at the purchase cost
+                t_mov                 
+--------------------------------------
+ 44651a1b-826f-4380-a0df-fb10955e5c8f
+(1 row)
+
+DO
+--- OK expected: sale when nothing on hand uses LAST_PURCHASE cost, flagged estimated
+                t_mov                 
+--------------------------------------
+ c6e930d1-6db7-45a0-979d-9f97c8e3ef37
+(1 row)
+
+                t_mov                 
+--------------------------------------
+ 2cbfd6a1-c4b0-4153-98eb-6cc9e7bbf730
+(1 row)
+
+DO
+--- OK expected: BLOCK_MANUAL policy set
+UPDATE 1
+--- FAIL expected: wastage that would take stock below zero under BLOCK_MANUAL
+ERROR:  NEGATIVE_STOCK_BLOCKED
+CONTEXT:  PL/pgSQL function trg_stock_movements_before() line 25 at RAISE
+SQL statement "INSERT INTO stock_movements(tenant_id,outlet_id,stock_item_id,kind,quantity_base,unit_cost,cost_basis,occurred_at,business_date,reason_code,
+                              ref_type,ref_id,consumption_id,reverses_movement_id,dedupe_key)
+  VALUES (tn,p_outlet,p_item,p_kind,p_qty,c,b,p_at,p_date,p_reason,p_ref_type,p_ref_id,p_cons,p_rev,p_key) RETURNING id"
+PL/pgSQL function t_mov(uuid,uuid,text,numeric,text,text,uuid,numeric,text,date,text,uuid,uuid,timestamp with time zone) line 13 at SQL statement
+--- OK expected: wastage within stock under BLOCK_MANUAL
+                t_mov                 
+--------------------------------------
+ d0a99603-20da-4c1b-8654-ae1fdd2f7709
+(1 row)
+
+--- OK expected: a SALE can still drive stock negative under BLOCK_MANUAL (billing is never blocked)
+                t_mov                 
+--------------------------------------
+ 23d724d7-1fec-4060-bff5-3c3617797d03
+(1 row)
+
+UPDATE 1
+--- FAIL expected: UPDATE on the ledger
+ERROR:  LEDGER_IMMUTABLE: stock_movements is append-only (UPDATE not allowed)
+CONTEXT:  PL/pgSQL function trg_stock_movements_immutable() line 2 at RAISE
+--- FAIL expected: UPDATE of quantity on the ledger
+ERROR:  LEDGER_IMMUTABLE: stock_movements is append-only (UPDATE not allowed)
+CONTEXT:  PL/pgSQL function trg_stock_movements_immutable() line 2 at RAISE
+--- FAIL expected: DELETE on the ledger
+ERROR:  LEDGER_IMMUTABLE: stock_movements is append-only (DELETE not allowed)
+CONTEXT:  PL/pgSQL function trg_stock_movements_immutable() line 2 at RAISE
+--- FAIL expected: TRUNCATE on the ledger
+ERROR:  LEDGER_IMMUTABLE: stock_movements is append-only (TRUNCATE not allowed)
+CONTEXT:  PL/pgSQL function trg_stock_movements_immutable() line 2 at RAISE
+--- OK expected: the ledger sum equals on_hand for every level (no divergence)
+DO
+--- OK expected: draft recipe for a menu item
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+--- FAIL expected: recipe line unit of the wrong family (litre for grams)
+ERROR:  UNIT_FAMILY_MISMATCH: g cannot be used for an item counted in ml
+CONTEXT:  PL/pgSQL function trg_recipe_lines_rules() line 14 at RAISE
+ERROR:  UNIT_FAMILY_MISMATCH: l cannot be used for an item counted in g
+CONTEXT:  PL/pgSQL function trg_recipe_lines_rules() line 14 at RAISE
+--- FAIL expected: recipe line in a pack unit
+ERROR:  UNIT_FAMILY_MISMATCH: crate cannot be used for an item counted in pcs
+CONTEXT:  PL/pgSQL function trg_recipe_lines_rules() line 14 at RAISE
+--- FAIL expected: quantity_base not equal to quantity x unit factor
+ERROR:  QUANTITY_BASE_MISMATCH
+CONTEXT:  PL/pgSQL function trg_recipe_lines_rules() line 17 at RAISE
+--- FAIL expected: wastage 100 percent
+ERROR:  new row for relation "recipe_lines" violates check constraint "recipe_lines_wastage_percent_check"
+DETAIL:  Failing row contains (68fce311-b89f-486e-8623-c3fb6ce9dd56, 00000000-0000-0000-0000-00000000f001, 3, 00000000-0000-0000-0000-0000000005e3, 1.0000, pcs, 1.0000, 100.00, DIRECT).
+--- FAIL expected: zero quantity
+ERROR:  new row for relation "recipe_lines" violates check constraint "recipe_lines_quantity_base_check"
+DETAIL:  Failing row contains (9d4b0abc-d556-4228-ab8b-7ec5f7c2fd65, 00000000-0000-0000-0000-00000000f001, 3, 00000000-0000-0000-0000-0000000005e3, 0.0000, pcs, 0.0000, 0.00, DIRECT).
+--- FAIL expected: same ingredient twice in a recipe
+ERROR:  duplicate key value violates unique constraint "recipe_lines_recipe_id_stock_item_id_key"
+DETAIL:  Key (recipe_id, stock_item_id)=(00000000-0000-0000-0000-00000000f001, 00000000-0000-0000-0000-0000000005e1) already exists.
+--- FAIL expected: ingredient of another tenant
+ERROR:  STOCK_ITEM_TENANT_MISMATCH
+CONTEXT:  PL/pgSQL function trg_recipe_lines_rules() line 10 at RAISE
+--- FAIL expected: EXPAND on a non-prep ingredient
+ERROR:  EXPAND_ONLY_FOR_PREP
+CONTEXT:  PL/pgSQL function trg_recipe_lines_rules() line 25 at RAISE
+--- OK expected: prep item used as a sub-recipe ingredient (EXPAND)
+INSERT 0 1
+--- FAIL expected: recipe for a menu item of another outlet
+ERROR:  RECIPE_TARGET_OUTLET_MISMATCH
+CONTEXT:  PL/pgSQL function trg_recipes_rules() line 19 at RAISE
+--- FAIL expected: recipe with two targets
+ERROR:  new row for relation "recipes" violates check constraint "recipes_check1"
+DETAIL:  Failing row contains (f0be6056-69aa-4c59-9d87-033c30188c48, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, MENU_ITEM, 00000000-0000-0000-0000-000000000a11, 00000000-0000-0000-0000-000000000b01, null, null, 00000000-0000-0000-0000-000000000b01, 9, DRAFT, 2026-01-01 00:00:00+00, null, null, f, 1.0000, null, null, 2026-11-27 16:23:11.381278+00).
+--- FAIL expected: target type does not match the target column
+ERROR:  new row for relation "recipes" violates check constraint "recipes_check1"
+DETAIL:  Failing row contains (c1fbc40a-1f9b-40da-af0a-540d5b786b7f, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, MENU_ITEM, null, 00000000-0000-0000-0000-000000000b01, null, null, 00000000-0000-0000-0000-000000000b01, 9, DRAFT, 2026-01-01 00:00:00+00, null, null, f, 1.0000, null, null, 2026-11-27 16:23:11.381637+00).
+--- FAIL expected: inherit flag on a menu-item recipe
+ERROR:  new row for relation "recipes" violates check constraint "recipes_check4"
+DETAIL:  Failing row contains (1f9f52bf-d506-472f-9494-f8fff5d4dd78, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, MENU_ITEM, 00000000-0000-0000-0000-000000000a11, null, null, null, 00000000-0000-0000-0000-000000000a11, 9, DRAFT, 2026-01-01 00:00:00+00, null, null, t, 1.0000, null, null, 2026-11-27 16:23:11.381897+00).
+--- FAIL expected: effective_to not after effective_from
+ERROR:  new row for relation "recipes" violates check constraint "recipes_check"
+DETAIL:  Failing row contains (60d64a32-b16b-483b-b86b-1d272ab5beea, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, MENU_ITEM, 00000000-0000-0000-0000-000000000a11, null, null, null, 00000000-0000-0000-0000-000000000a11, 9, DRAFT, 2026-01-01 00:00:00+00, 2026-01-01 00:00:00+00, null, f, 1.0000, null, null, 2026-11-27 16:23:11.382194+00).
+--- FAIL expected: outlet-less recipe for a menu item
+ERROR:  new row for relation "recipes" violates check constraint "recipes_check3"
+DETAIL:  Failing row contains (fcf2ac58-28a0-4633-9350-1c36e785be1e, 00000000-0000-0000-0000-000000000001, null, MENU_ITEM, 00000000-0000-0000-0000-000000000a11, null, null, null, 00000000-0000-0000-0000-000000000a11, 9, DRAFT, 2026-01-01 00:00:00+00, null, null, f, 1.0000, null, null, 2026-11-27 16:23:11.382812+00).
+--- FAIL expected: portion factor zero
+ERROR:  new row for relation "recipes" violates check constraint "recipes_portion_factor_check"
+DETAIL:  Failing row contains (2ce6e0f9-3083-4f3f-8dff-fdf9b6e16e2a, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, VARIANT, null, 00000000-0000-0000-0000-000000000b01, null, null, 00000000-0000-0000-0000-000000000b01, 1, DRAFT, 2026-01-01 00:00:00+00, null, null, t, 0.0000, null, null, 2026-11-27 16:23:11.383091+00).
+--- OK expected: variant recipe inheriting the item recipe at 0.6 portion
+INSERT 0 1
+--- FAIL expected: lines on an inheriting variant recipe
+ERROR:  RECIPE_INHERITS: a variant that inherits the item recipe has no lines
+CONTEXT:  PL/pgSQL function trg_recipe_lines_rules() line 8 at RAISE
+--- OK expected: modifier recipe (extra cheese)
+INSERT 0 1
+INSERT 0 1
+--- OK expected: prep recipe (gravy base, yields 1000 g per batch, shared by outlets)
+INSERT 0 1
+INSERT 0 1
+--- FAIL expected: prep recipe using another prep item (no nesting beyond one level)
+ERROR:  PREP_NESTING_NOT_ALLOWED: a prep recipe may only use raw/retail items
+CONTEXT:  PL/pgSQL function trg_recipe_lines_rules() line 20 at RAISE
+--- FAIL expected: prep recipe whose target is not a PREP item
+INSERT 0 1
+ERROR:  PREP_TARGET_INVALID
+CONTEXT:  PL/pgSQL function trg_recipe_lines_rules() line 22 at RAISE
+--- FAIL expected: prep recipe without yield
+ERROR:  new row for relation "recipes" violates check constraint "recipes_check2"
+DETAIL:  Failing row contains (09689d16-2a62-4daa-bb45-4c0b861e69f3, 00000000-0000-0000-0000-000000000001, null, PREP_ITEM, null, null, null, 00000000-0000-0000-0000-0000000005e4, 00000000-0000-0000-0000-0000000005e4, 7, DRAFT, 2026-01-01 00:00:00+00, null, null, f, 1.0000, null, null, 2026-11-27 16:23:11.389772+00).
+--- FAIL expected: prep recipe bound to one outlet
+ERROR:  new row for relation "recipes" violates check constraint "recipes_check3"
+DETAIL:  Failing row contains (2ebd5550-a1d6-47ea-a04a-f3983082f6d7, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, PREP_ITEM, null, null, null, 00000000-0000-0000-0000-0000000005e4, 00000000-0000-0000-0000-0000000005e4, 7, DRAFT, 2026-01-01 00:00:00+00, null, 1000.0000, f, 1.0000, null, null, 2026-11-27 16:23:11.39006+00).
+--- FAIL expected: duplicate version number for the same target
+ERROR:  duplicate key value violates unique constraint "recipes_target_id_version_key"
+DETAIL:  Key (target_id, version)=(00000000-0000-0000-0000-000000000a11, 1) already exists.
+--- OK expected: draft recipes are deletable
+INSERT 0 1
+DELETE 1
+--- OK expected: activate version 1 (open ended)
+UPDATE 1
+--- FAIL expected: a second ACTIVE version overlapping in time
+ERROR:  conflicting key value violates exclusion constraint "recipes_target_id_tstzrange_excl"
+DETAIL:  Key (target_id, tstzrange(effective_from, effective_to))=(00000000-0000-0000-0000-000000000a11, ["2026-06-01 00:00:00+00",)) conflicts with existing key (target_id, tstzrange(effective_from, effective_to))=(00000000-0000-0000-0000-000000000a11, ["2026-01-01 00:00:00+00",)).
+--- FAIL expected: line added to an active recipe
+ERROR:  RECIPE_IMMUTABLE: create a new version instead
+CONTEXT:  PL/pgSQL function trg_recipe_lines_rules() line 6 at RAISE
+--- FAIL expected: line of an active recipe edited
+ERROR:  RECIPE_IMMUTABLE: create a new version instead
+CONTEXT:  PL/pgSQL function trg_recipe_lines_rules() line 6 at RAISE
+--- FAIL expected: line of an active recipe deleted
+ERROR:  RECIPE_IMMUTABLE: create a new version instead
+CONTEXT:  PL/pgSQL function trg_recipe_lines_rules() line 6 at RAISE
+--- FAIL expected: effective_from of an active recipe changed
+ERROR:  RECIPE_IMMUTABLE: an active recipe only gets an end date or is archived
+CONTEXT:  PL/pgSQL function trg_recipes_rules() line 35 at RAISE
+--- FAIL expected: active recipe deleted
+ERROR:  RECIPE_IMMUTABLE: only drafts can be deleted
+CONTEXT:  PL/pgSQL function trg_recipes_rules() line 4 at RAISE
+--- FAIL expected: active recipe sent back to draft
+ERROR:  RECIPE_IMMUTABLE: an active recipe only gets an end date or is archived
+CONTEXT:  PL/pgSQL function trg_recipes_rules() line 35 at RAISE
+--- OK expected: end date set on the active recipe
+UPDATE 1
+--- OK expected: version 2 starts exactly when version 1 ends (no overlap, no gap)
+INSERT 0 1
+--- OK expected: the version effective at a given instant is unique
+DO
+--- OK expected: archive an active recipe
+UPDATE 1
+--- FAIL expected: archived recipe reactivated
+ERROR:  RECIPE_IMMUTABLE: an active recipe only gets an end date or is archived
+CONTEXT:  PL/pgSQL function trg_recipes_rules() line 35 at RAISE
+--- OK expected: PO draft with a line
+INSERT 0 1
+INSERT 0 1
+--- FAIL expected: PO line with zero quantity
+ERROR:  new row for relation "purchase_order_lines" violates check constraint "purchase_order_lines_ordered_qty_check"
+DETAIL:  Failing row contains (e4b19962-40e4-4231-a18f-d4090c09e40b, 00000000-0000-0000-0000-0000000008a1, 00000000-0000-0000-0000-0000000005e2, 0.0000, 50.000000, 0.0000).
+--- FAIL expected: same item twice on a PO
+ERROR:  duplicate key value violates unique constraint "purchase_order_lines_po_id_stock_item_id_key"
+DETAIL:  Key (po_id, stock_item_id)=(00000000-0000-0000-0000-0000000008a1, 00000000-0000-0000-0000-0000000005e1) already exists.
+--- FAIL expected: duplicate PO number at the outlet
+ERROR:  duplicate key value violates unique constraint "purchase_orders_outlet_id_po_number_key"
+DETAIL:  Key (outlet_id, po_number)=(00000000-0000-0000-0000-0000000000a1, PO-000001) already exists.
+--- FAIL expected: SENT without sent_at
+ERROR:  new row for relation "purchase_orders" violates check constraint "purchase_orders_check1"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000008a1, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000da1, PO-000001, SENT, null, null, 0.00, 00000000-0000-0000-0000-0000000000f2, 2026-11-27 16:23:11.396957+00, null, null, 0).
+--- OK expected: SENT with sent_at
+UPDATE 1
+--- FAIL expected: CANCELLED without a reason
+ERROR:  new row for relation "purchase_orders" violates check constraint "purchase_orders_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000008a1, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000da1, PO-000001, CANCELLED, null, null, 0.00, 00000000-0000-0000-0000-0000000000f2, 2026-11-27 16:23:11.396957+00, 2026-11-27 16:23:11.400198+00, null, 0).
+--- FAIL expected: invalid PO status
+ERROR:  new row for relation "purchase_orders" violates check constraint "purchase_orders_status_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000008a1, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000da1, PO-000001, CLOSED, null, null, 0.00, 00000000-0000-0000-0000-0000000000f2, 2026-11-27 16:23:11.396957+00, 2026-11-27 16:23:11.400198+00, null, 0).
+--- OK expected: CANCELLED with a reason
+UPDATE 1
+--- FAIL expected: negative received quantity
+ERROR:  new row for relation "purchase_order_lines" violates check constraint "purchase_order_lines_received_qty_check"
+DETAIL:  Failing row contains (c6782b72-9712-4225-99cc-8138d2e07ad2, 00000000-0000-0000-0000-0000000008a1, 00000000-0000-0000-0000-0000000005e1, 20.0000, 400.000000, -1.0000).
+--- FAIL expected: VOID without a reason
+ERROR:  new row for relation "goods_receipts" violates check constraint "goods_receipts_check2"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000009a1, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000da1, null, GRN-000001, VOID, INV-1, 2026-11-20, null, 2026-11-27 16:23:11.318725+00, 4000.00, 200.00, 0.00, 0.00, 4200.00, null, null, null, null, 00000000-0000-0000-0000-0000000000f2, 00000000-0000-0000-0000-0000000000f2, 2026-11-27 16:23:11.321495+00, null, null, 0).
+--- OK expected: posted GRN voided with reason
+UPDATE 1
+--- FAIL expected: void GRN changed again
+ERROR:  GRN_VOID_IS_FINAL
+CONTEXT:  PL/pgSQL function trg_grn_header_rules() line 7 at RAISE
+--- OK expected: invoice number becomes usable again after the receipt is void
+INSERT 0 1
+--- OK expected: two more posted GRNs for payment tests
+INSERT 0 3
+INSERT 0 1
+--- FAIL expected: payment of zero
+ERROR:  new row for relation "vendor_payments" violates check constraint "vendor_payments_amount_check"
+DETAIL:  Failing row contains (88d9a014-42fa-4d99-8800-76852f574036, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-000000000da1, null, 2026-11-10, 0.00, UPI, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:11.406307+00, null).
+--- FAIL expected: payment method not in list
+ERROR:  new row for relation "vendor_payments" violates check constraint "vendor_payments_method_check"
+DETAIL:  Failing row contains (f48544ac-1823-46e7-b1cf-b5b105051972, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-000000000da1, null, 2026-11-10, 5.00, BITCOIN, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:11.406562+00, null).
+--- OK expected: allocate 4200 to the first invoice
+INSERT 0 1
+--- FAIL expected: allocations exceed the payment (4200 + 900 > 5000)
+ERROR:  ALLOCATION_EXCEEDS_PAYMENT
+CONTEXT:  PL/pgSQL function trg_vendor_alloc_limits() line 11 at RAISE
+--- OK expected: allocate the remaining 800
+INSERT 0 1
+--- FAIL expected: allocation to an invoice of another vendor
+INSERT 0 1
+ERROR:  ALLOCATION_VENDOR_MISMATCH
+CONTEXT:  PL/pgSQL function trg_vendor_alloc_limits() line 7 at RAISE
+--- FAIL expected: allocation to a draft (unposted) receipt
+ERROR:  ALLOCATION_GRN_NOT_POSTED
+CONTEXT:  PL/pgSQL function trg_vendor_alloc_limits() line 6 at RAISE
+--- FAIL expected: allocation over the invoice total (4200 already paid)
+ERROR:  ALLOCATION_EXCEEDS_INVOICE
+CONTEXT:  PL/pgSQL function trg_vendor_alloc_limits() line 12 at RAISE
+--- FAIL expected: duplicate allocation row for the same payment and invoice
+ERROR:  duplicate key value violates unique constraint "vendor_payment_allocations_payment_id_grn_id_key"
+DETAIL:  Key (payment_id, grn_id)=(00000000-0000-0000-0000-0000000007a1, 00000000-0000-0000-0000-0000000009b1) already exists.
+--- OK expected: voiding the first payment frees the invoice
+UPDATE 1
+INSERT 0 1
+--- OK expected: wastage record
+INSERT 0 1
+--- FAIL expected: wastage with a positive quantity
+ERROR:  new row for relation "stock_adjustments" violates check constraint "stock_adjustments_check"
+DETAIL:  Failing row contains (636d163f-6ec9-4f1c-8965-7b0d3a16b6b8, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, ADJ-000002, WASTAGE, 00000000-0000-0000-0000-0000000005e1, 500.0000, SPOILAGE, null, 1.00, f, null, null, 00000000-0000-0000-0000-0000000000f2, 2026-11-27 16:23:11.414747+00).
+--- FAIL expected: wastage reason code not in the list
+ERROR:  new row for relation "stock_adjustments" violates check constraint "stock_adjustments_check1"
+DETAIL:  Failing row contains (0e900c24-0928-4d7c-a249-c34f948ace40, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, ADJ-000002, WASTAGE, 00000000-0000-0000-0000-0000000005e1, -5.0000, FELT_LIKE_IT, null, 1.00, f, null, null, 00000000-0000-0000-0000-0000000000f2, 2026-11-27 16:23:11.415012+00).
+--- FAIL expected: reason OTHER without a note
+ERROR:  new row for relation "stock_adjustments" violates check constraint "stock_adjustments_check3"
+DETAIL:  Failing row contains (3d248864-8bfd-48da-8c34-041c62e55b2a, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, ADJ-000002, WASTAGE, 00000000-0000-0000-0000-0000000005e1, -5.0000, OTHER, null, 1.00, f, null, null, 00000000-0000-0000-0000-0000000000f2, 2026-11-27 16:23:11.415218+00).
+--- FAIL expected: approval required but no approver
+ERROR:  new row for relation "stock_adjustments" violates check constraint "stock_adjustments_check4"
+DETAIL:  Failing row contains (d64f8be2-0645-4671-9094-8fccb0b536e0, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, ADJ-000002, WASTAGE, 00000000-0000-0000-0000-0000000005e1, -5000.0000, SPOILAGE, null, 2166.00, t, null, null, 00000000-0000-0000-0000-0000000000f2, 2026-11-27 16:23:11.415408+00).
+--- OK expected: approval required and manager recorded
+INSERT 0 1
+--- FAIL expected: duplicate adjustment number
+ERROR:  duplicate key value violates unique constraint "stock_adjustments_outlet_id_adjustment_number_key"
+DETAIL:  Key (outlet_id, adjustment_number)=(00000000-0000-0000-0000-0000000000a1, ADJ-000002) already exists.
+--- FAIL expected: adjustment reason from the wastage list
+ERROR:  new row for relation "stock_adjustments" violates check constraint "stock_adjustments_check2"
+DETAIL:  Failing row contains (65ea5683-d493-4861-985d-8797c28f26f2, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, ADJ-000003, ADJUSTMENT, 00000000-0000-0000-0000-0000000005e1, 5.0000, SPILL, null, 1.00, f, null, null, 00000000-0000-0000-0000-0000000000f2, 2026-11-27 16:23:11.416501+00).
+--- OK expected: count sheet with lines and generated variance
+INSERT 0 1
+INSERT 0 1
+DO
+--- FAIL expected: negative counted quantity
+ERROR:  new row for relation "stock_count_lines" violates check constraint "stock_count_lines_counted_qty_base_check"
+DETAIL:  Failing row contains (21b343ec-5e37-4845-a5d1-76862f4b68df, 00000000-0000-0000-0000-0000000006a1, 00000000-0000-0000-0000-0000000005e2, 0.0000, 0.060000, -1.0000, -1.0000, -0.06, null).
+--- FAIL expected: same item twice on a count sheet
+ERROR:  duplicate key value violates unique constraint "stock_count_lines_count_id_stock_item_id_key"
+DETAIL:  Key (count_id, stock_item_id)=(00000000-0000-0000-0000-0000000006a1, 00000000-0000-0000-0000-0000000005e1) already exists.
+--- FAIL expected: category count without a category
+ERROR:  new row for relation "stock_counts" violates check constraint "stock_counts_check"
+DETAIL:  Failing row contains (b97402e7-657f-431a-bc47-adf6dd989d7c, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, CNT-000002, DRAFT, CATEGORY, null, t, null, null, null, null, null, null, 00000000-0000-0000-0000-0000000000f2, 2026-11-27 16:23:11.419695+00).
+--- FAIL expected: submitted count without submitter
+ERROR:  new row for relation "stock_counts" violates check constraint "stock_counts_check2"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000006a1, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, CNT-000001, SUBMITTED, FULL, null, t, null, null, null, null, null, null, 00000000-0000-0000-0000-0000000000f2, 2026-11-27 16:23:11.416689+00).
+--- FAIL expected: approver is the same person as the submitter (four eyes)
+ERROR:  new row for relation "stock_counts" violates check constraint "stock_counts_check3"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000006a1, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, CNT-000001, APPROVED, FULL, null, t, null, null, 00000000-0000-0000-0000-0000000000f2, 2026-11-27 16:23:11.420065+00, 00000000-0000-0000-0000-0000000000f2, 2026-11-27 16:23:11.420065+00, 00000000-0000-0000-0000-0000000000f2, 2026-11-27 16:23:11.416689+00).
+--- FAIL expected: approved without approver
+ERROR:  new row for relation "stock_counts" violates check constraint "stock_counts_check1"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000006a1, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, CNT-000001, APPROVED, FULL, null, t, null, null, 00000000-0000-0000-0000-0000000000f2, 2026-11-27 16:23:11.420221+00, null, null, 00000000-0000-0000-0000-0000000000f2, 2026-11-27 16:23:11.416689+00).
+--- OK expected: submitted by inventory user and approved by manager
+UPDATE 1
+--- FAIL expected: invalid count status
+ERROR:  new row for relation "stock_counts" violates check constraint "stock_counts_status_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000006a1, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, CNT-000001, DONE, FULL, null, t, null, null, 00000000-0000-0000-0000-0000000000f2, 2026-11-27 16:23:11.420394+00, 00000000-0000-0000-0000-0000000000f3, 2026-11-27 16:23:11.420394+00, 00000000-0000-0000-0000-0000000000f2, 2026-11-27 16:23:11.416689+00).
+--- OK expected: COUNT_VARIANCE movement of the shortage
+                t_mov                 
+--------------------------------------
+ bdc5ec46-c943-4c08-a2cf-2fc830c81abc
+(1 row)
+
+--- FAIL expected: transfer between the same outlet
+ERROR:  new row for relation "stock_transfers" violates check constraint "stock_transfers_check"
+DETAIL:  Failing row contains (f98ecef9-7e32-41cb-a486-3deea3cdfad1, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-0000000000a1, TRF-000001, DRAFT, null, null, null, null, null, 00000000-0000-0000-0000-0000000000f2, 2026-11-27 16:23:11.422495+00).
+--- FAIL expected: transfer to an outlet of another tenant
+ERROR:  TRANSFER_CROSS_TENANT
+CONTEXT:  PL/pgSQL function trg_transfer_same_tenant() line 5 at RAISE
+--- OK expected: draft transfer with a line
+INSERT 0 1
+INSERT 0 1
+--- FAIL expected: IN_TRANSIT without sender
+ERROR:  new row for relation "stock_transfers" violates check constraint "stock_transfers_check1"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000005a1, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-0000000000a2, TRF-000001, IN_TRANSIT, null, null, null, null, null, 00000000-0000-0000-0000-0000000000f2, 2026-11-27 16:23:11.42355+00).
+--- OK expected: sent
+UPDATE 1
+UPDATE 1
+--- FAIL expected: received without receiver
+ERROR:  new row for relation "stock_transfers" violates check constraint "stock_transfers_check2"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000005a1, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-0000000000a2, TRF-000001, RECEIVED, 00000000-0000-0000-0000-0000000000f2, 2026-11-27 16:23:11.426433+00, null, null, null, 00000000-0000-0000-0000-0000000000f2, 2026-11-27 16:23:11.42355+00).
+--- FAIL expected: received more than sent
+ERROR:  new row for relation "stock_transfer_lines" violates check constraint "stock_transfer_lines_check"
+DETAIL:  Failing row contains (60361a0d-024d-49ef-99d1-270d42eface1, 00000000-0000-0000-0000-0000000005a1, 00000000-0000-0000-0000-0000000005e1, 2000.0000, 0.433333, 2001.0000).
+--- OK expected: received 1980 of 2000 (20 g short in transit)
+UPDATE 1
+UPDATE 1
+--- OK expected: TRANSFER_OUT at average, TRANSFER_IN at the sent cost into the other outlet
+                t_mov                 
+--------------------------------------
+ 011e28f3-c679-4dd2-9454-e287c0d9faf0
+(1 row)
+
+                t_mov                 
+--------------------------------------
+ 8da0cd8d-f3d3-4836-be59-54c21bd21c11
+(1 row)
+
+--- FAIL expected: TRANSFER_IN at a cost basis other than ACTUAL
+ERROR:  new row for relation "stock_movements" violates check constraint "stock_movements_check3"
+DETAIL:  Failing row contains (2bff5332-7e42-4146-a6d7-67ec45880b50, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a2, 00000000-0000-0000-0000-0000000005e1, TRANSFER_IN, 10.0000, 0.433333, AVERAGE, f, 4.33, 2026-11-23 04:30:00+00, 2026-11-23, 2026-11-27 16:23:11.433122+00, null, null, null, null, null, null, null, t-trf-in2).
+CONTEXT:  SQL statement "INSERT INTO stock_movements(tenant_id,outlet_id,stock_item_id,kind,quantity_base,unit_cost,cost_basis,occurred_at,business_date,reason_code,
+                              ref_type,ref_id,consumption_id,reverses_movement_id,dedupe_key)
+  VALUES (tn,p_outlet,p_item,p_kind,p_qty,c,b,p_at,p_date,p_reason,p_ref_type,p_ref_id,p_cons,p_rev,p_key) RETURNING id"
+PL/pgSQL function t_mov(uuid,uuid,text,numeric,text,text,uuid,numeric,text,date,text,uuid,uuid,timestamp with time zone) line 13 at SQL statement
+--- FAIL expected: duplicate transfer number from the same outlet
+ERROR:  duplicate key value violates unique constraint "stock_transfers_from_outlet_id_transfer_number_key"
+DETAIL:  Key (from_outlet_id, transfer_number)=(00000000-0000-0000-0000-0000000000a1, TRF-000001) already exists.
+--- OK expected: production run turns raw into prep stock
+                t_mov                 
+--------------------------------------
+ 5d3159e1-ee0f-4be5-9d63-9e3defb39ca1
+(1 row)
+
+                t_mov                 
+--------------------------------------
+ 073f6072-7ae3-4d84-9734-96742c6d75f8
+(1 row)
+
+INSERT 0 1
+--- FAIL expected: production run with zero batches
+ERROR:  new row for relation "production_runs" violates check constraint "production_runs_batches_check"
+DETAIL:  Failing row contains (f8bb43b6-8e8f-45d6-abb6-a7363b2e8eae, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, PRD-000002, 00000000-0000-0000-0000-0000000005e4, 00000000-0000-0000-0000-00000000f004, 0.000, 980.0000, 2026-11-27 16:23:11.437876+00, 2026-11-23, 00000000-0000-0000-0000-0000000000f2, 2026-11-27 16:23:11.437876+00).
+--- FAIL expected: production run with zero output
+ERROR:  new row for relation "production_runs" violates check constraint "production_runs_output_qty_base_check"
+DETAIL:  Failing row contains (d3cb5fec-d161-4ab5-97c9-1d4a94509f6d, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, PRD-000002, 00000000-0000-0000-0000-0000000005e4, 00000000-0000-0000-0000-00000000f004, 1.000, 0.0000, 2026-11-27 16:23:11.438162+00, 2026-11-23, 00000000-0000-0000-0000-0000000000f2, 2026-11-27 16:23:11.438162+00).
+--- OK expected: day-close snapshot with generated value
+INSERT 0 1
+DO
+--- FAIL expected: second snapshot row for the same outlet, date and item
+ERROR:  duplicate key value violates unique constraint "stock_snapshots_pkey"
+DETAIL:  Key (outlet_id, business_date, stock_item_id)=(00000000-0000-0000-0000-0000000000a1, 2026-11-23, 00000000-0000-0000-0000-0000000005e1) already exists.
+--- OK expected: validated import job with row errors
+INSERT 0 1
+--- FAIL expected: counts do not add up
+ERROR:  new row for relation "inventory_import_jobs" violates check constraint "inventory_import_jobs_check"
+DETAIL:  Failing row contains (7c1f17a8-3a82-46dd-808e-4f4667872666, 00000000-0000-0000-0000-000000000001, null, RECIPES, k/j.csv, bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb, VALIDATED, 10, 8, 1, [], f, 00000000-0000-0000-0000-0000000000f2, 2026-11-27 16:23:11.4409+00, null).
+--- FAIL expected: committed with errors without the valid-only flag
+ERROR:  new row for relation "inventory_import_jobs" violates check constraint "inventory_import_jobs_check1"
+DETAIL:  Failing row contains (40cad13a-7221-4146-aa58-2ae0d352f5e1, 00000000-0000-0000-0000-000000000001, null, STOCK_ITEMS, k/i.csv, aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, COMMITTED, 10, 8, 2, [{"row": 3, "code": "UNIT_FAMILY_MISMATCH", "column": "unit", "m..., f, 00000000-0000-0000-0000-0000000000f2, 2026-11-27 16:23:11.439622+00, 2026-11-27 16:23:11.441107+00).
+--- OK expected: committed with valid-only flag
+UPDATE 1
+--- FAIL expected: the same file committed a second time
+ERROR:  duplicate key value violates unique constraint "ux_import_committed_file"
+DETAIL:  Key (tenant_id, kind, file_sha256)=(00000000-0000-0000-0000-000000000001, STOCK_ITEMS, aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa) already exists.
+--- OK expected: the same file may be re-validated (not committed) again
+INSERT 0 1
+--- FAIL expected: invalid import kind
+ERROR:  new row for relation "inventory_import_jobs" violates check constraint "inventory_import_jobs_kind_check"
+DETAIL:  Failing row contains (fbaf4197-bf8f-4072-8a9e-e9b02fc6b1f5, 00000000-0000-0000-0000-000000000001, null, MENU, k/i4.csv, cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc, VALIDATED, 1, 1, 0, [], f, 00000000-0000-0000-0000-0000000000f2, 2026-11-27 16:23:11.444591+00, null).
+--- OK expected: ledger sum equals on_hand for every level after all scenarios
+DO
+--- OK expected: every level has at least one ledger row and vice versa
+DO

@@ -10,7 +10,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 @Testcontainers @SpringBootTest
-class MigrationsIT {
+class MigrationsTest {
   @Container static PostgreSQLContainer<?> pg = new PostgreSQLContainer<>("postgres:16");
   @DynamicPropertySource static void p(DynamicPropertyRegistry r) { r.add("spring.datasource.url", pg::getJdbcUrl); r.add("spring.datasource.username", pg::getUsername); r.add("spring.datasource.password", pg::getPassword); r.add("spring.jpa.hibernate.ddl-auto", () -> "none"); }
   @Autowired JdbcTemplate jdbc;

@@ -1,15 +1,17 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { canUse3D } from './lib/perf'
-import { api, setToken, type Session } from './lib/api'
+import { api, setToken, refreshSession, logoutSession, hasSessionHint, setSessionHint, type Session } from './lib/api'
 import { ErrorBoundary } from './ui/ErrorBoundary'
 import Login from './ui/Login'
 import PlatformLogin from './ui/PlatformLogin'
 import MenuPage from './pages/MenuPage'
 import SubscriptionPage, { type Sub } from './pages/SubscriptionPage'
 import ActivityPage from './pages/ActivityPage'
+import StaffPage from './pages/StaffPage'
+import OutletPage from './pages/OutletPage'
 import PlatformConsole from './pages/PlatformConsole'
 const Hero3D = lazy(() => import('./ui/Hero3D'))
-type Page = 'menu' | 'subscription' | 'activity'
+type Page = 'menu' | 'staff' | 'settings' | 'subscription' | 'activity'
 
 function Banner({ sub, goPay }: { sub: Sub | null; goPay: () => void }) {
   if (!sub) return null
@@ -38,10 +40,14 @@ function RestaurantApp({ session, onLogout }: { session: Session; onLogout: () =
         <Banner sub={sub} goPay={() => setPage('subscription')} />
         <nav className="tabs" aria-label="Sections">
           <button className={page === 'menu' ? 'on' : ''} onClick={() => setPage('menu')}>Menu</button>
+          {boss && <button className={page === 'staff' ? 'on' : ''} onClick={() => setPage('staff')}>Staff</button>}
+          <button className={page === 'settings' ? 'on' : ''} onClick={() => setPage('settings')}>Settings</button>
           {boss && <button className={page === 'subscription' ? 'on' : ''} onClick={() => setPage('subscription')}>Subscription</button>}
           {boss && <button className={page === 'activity' ? 'on' : ''} onClick={() => setPage('activity')}>Activity</button>}
         </nav>
         {page === 'menu' && <MenuPage session={session} />}
+        {page === 'staff' && boss && <StaffPage myId={session.user.id} isOwner={session.user.role === 'OWNER'} />}
+        {page === 'settings' && <OutletPage canEdit={boss} />}
         {page === 'subscription' && boss && <SubscriptionPage isOwner={session.user.role === 'OWNER'} />}
         {page === 'activity' && boss && <ActivityPage />}
       </>)}
@@ -51,9 +57,14 @@ function RestaurantApp({ session, onLogout }: { session: Session; onLogout: () =
 export default function App() {
   const [session, setSession] = useState<Session | null>(null)
   const [platform, setPlatform] = useState<'login' | 'in' | null>(null)
+  const [restoring, setRestoring] = useState(true)
   const fancy = canUse3D()
-  const onSession = (s: Session) => { setToken(s.accessToken); setSession(s) }
-  const logout = () => { setToken(null); setSession(null); setPlatform(null) }
+  const onSession = (s: Session) => { setToken(s.accessToken); setSessionHint(true); setSession(s) }
+  const logout = () => { void logoutSession(); setToken(null); setSession(null); setPlatform(null) }
+  // Reopening the tab or reloading keeps you signed in while the refresh cookie is valid.
+  useEffect(() => { if (!hasSessionHint()) { setRestoring(false); return } refreshSession().then((s) => { if (s) setSession(s) }).finally(() => setRestoring(false)) }, [])
+  useEffect(() => { const f = () => { setToken(null); setSession(null) }; window.addEventListener('galla:expired', f); return () => window.removeEventListener('galla:expired', f) }, [])
+  if (restoring) return <main className="stage"><p role="status" className="muted">Loading…</p></main>
   return (
     <ErrorBoundary>
       {platform === 'in' ? <PlatformConsole onLogout={logout} />

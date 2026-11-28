@@ -10,7 +10,7 @@ const browser = await chromium.launch()
 const errors = []
 const watch = (page, who) => {
   page.on('pageerror', (e) => errors.push(`${who}: ${e}`))
-  page.on('console', (m) => { if (m.type() === 'error' && !/status of 402/.test(m.text())) errors.push(`${who}: ${m.text()}`) })
+  page.on('console', (m) => { if (m.type() === 'error' && !/status of (401|402|422)/.test(m.text())) errors.push(`${who}: ${m.text()}`) })
 }
 const step = (n) => console.log('✔', n)
 const expectText = async (page, text, t = 15000) => page.getByText(text, { exact: false }).first().waitFor({ timeout: t })
@@ -66,6 +66,27 @@ await admin.getByRole('button', { name: 'Confirm' }).click(); await expectText(a
 await owner.getByRole('button', { name: 'Sign out' }).click()
 await owner.getByLabel('Email').fill(email); await owner.getByLabel('Password').fill(PW); await owner.getByRole('button', { name: 'Sign in', exact: true }).click()
 await expectText(owner, 'Paneer Tikka'); step('access restored after payment')
+
+// 8b. a reload keeps the owner signed in (refresh cookie), staff can be added, and a disabled cashier loses access at once
+await owner.reload(); await expectText(owner, 'Paneer Tikka'); step('reload restores the session from the refresh cookie')
+await owner.getByRole('button', { name: 'Staff' }).click()
+const cashierMail = `cashier${stamp}@e2e.test`
+await owner.getByLabel('Name', { exact: true }).fill('Ravi'); await owner.getByLabel('Email').fill(cashierMail)
+await owner.getByLabel('Role').selectOption('CASHIER'); await owner.getByLabel('Temporary password').fill('cashier-pass-12')
+await owner.getByRole('button', { name: 'Add staff member' }).click(); await expectText(owner, cashierMail); step('owner adds a cashier')
+const cashier = await (await browser.newContext({ viewport: { width: 1100, height: 800 } })).newPage(); watch(cashier, 'cashier')
+await cashier.goto(BASE); await cashier.getByLabel('Sign in as').selectOption('CASHIER')
+await cashier.getByLabel('Email').fill(cashierMail); await cashier.getByLabel('Password').fill('cashier-pass-12'); await cashier.getByRole('button', { name: 'Sign in', exact: true }).click()
+await expectText(cashier, 'Paneer Tikka')
+if (await cashier.getByRole('button', { name: 'Staff' }).count()) errors.push('cashier: can see the Staff tab'); step('cashier signs in and has no staff controls')
+await owner.getByRole('row', { name: new RegExp(cashierMail) }).getByRole('button', { name: 'Disable' }).click(); await expectText(owner, 'Disabled')
+await cashier.getByRole('button', { name: 'Settings' }).click()
+await cashier.getByRole('button', { name: 'Sign in', exact: true }).waitFor({ timeout: 15000 }); step('disabled cashier is thrown out on the next click')
+
+// 8c. restaurant details validate GSTIN and save
+await owner.getByRole('button', { name: 'Settings' }).click()
+await owner.getByLabel('GSTIN').fill('NOT-A-GSTIN'); await owner.getByRole('button', { name: 'Save', exact: true }).click(); await expectText(owner, 'GSTIN must be 15 characters')
+await owner.getByLabel('GSTIN').fill('27ABCDE1234F1Z5'); await owner.getByLabel('City').fill('Pune'); await owner.getByRole('button', { name: 'Save', exact: true }).click(); await expectText(owner, 'Saved.'); step('restaurant details validate and save')
 
 // 9. phone-size layout has no sideways scroll
 await owner.setViewportSize({ width: 390, height: 800 })

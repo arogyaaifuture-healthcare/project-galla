@@ -5,7 +5,9 @@ import java.util.UUID;
 /** Plain data carriers shared by the subscription ports. */
 public final class SubscriptionModels {
   private SubscriptionModels() {}
-  public record Plan(UUID id, String code, String name, String currency, BigDecimal priceMonthly, BigDecimal priceYearly, int trialDays, int maxOutlets, int maxUsers, boolean active) {
+  public record Plan(UUID id, String code, String name, String currency,
+      @com.fasterxml.jackson.annotation.JsonFormat(shape = com.fasterxml.jackson.annotation.JsonFormat.Shape.STRING) BigDecimal priceMonthly,
+      @com.fasterxml.jackson.annotation.JsonFormat(shape = com.fasterxml.jackson.annotation.JsonFormat.Shape.STRING) BigDecimal priceYearly, int trialDays, int maxOutlets, int maxUsers, java.util.Map<String, Integer> roleLimits, boolean active) {
     public BigDecimal price(String cycle) { return "YEARLY".equals(cycle) ? priceYearly : priceMonthly; }
   }
   public record Sub(UUID id, UUID tenantId, UUID planId, String cycle, String status, BigDecimal priceSnapshot, String currency, Instant trialEndsAt, Instant anchor,

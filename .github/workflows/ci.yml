@@ -53,7 +53,7 @@ jobs:
       - name: Start API
         run: |
           GALLA_JWT_SECRET=e2e-tenant-secret-e2e-tenant-secret-1 GALLA_PLATFORM_JWT_SECRET=e2e-platform-secret-e2e-platform-secret-2 \
-          GALLA_BOOTSTRAP_ADMIN_EMAIL=root@galla.test GALLA_BOOTSTRAP_ADMIN_PASSWORD=super-admin-pass-1 \
+          GALLA_COOKIE_SECURE=false GALLA_BOOTSTRAP_ADMIN_EMAIL=root@galla.test GALLA_BOOTSTRAP_ADMIN_PASSWORD=super-admin-pass-1 \
           nohup java -jar backend/target/galla-api-0.1.0.jar > api.log 2>&1 &
           for i in $(seq 1 60); do curl -sf localhost:8080/actuator/health && break; sleep 2; done
       - uses: actions/setup-node@v4

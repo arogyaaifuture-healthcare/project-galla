@@ -22,7 +22,7 @@ class JdbcSubscriptionStore implements PlanRepository, SubscriptionRepository, I
 
   private static Instant ts(ResultSet r, String c) throws SQLException { OffsetDateTime o = r.getObject(c, OffsetDateTime.class); return o == null ? null : o.toInstant(); }
   private static final RowMapper<Plan> PLAN = (r, i) -> new Plan(r.getObject("id", UUID.class), r.getString("code"), r.getString("name"), r.getString("currency_code").trim(),
-      r.getBigDecimal("price_monthly"), r.getBigDecimal("price_yearly"), r.getInt("trial_days"), r.getInt("max_outlets"), r.getInt("max_users"), r.getBoolean("active"));
+      r.getBigDecimal("price_monthly"), r.getBigDecimal("price_yearly"), r.getInt("trial_days"), r.getInt("max_outlets"), r.getInt("max_users"), roleLimits(r.getString("role_limits")), r.getBoolean("active"));
   private static final RowMapper<Sub> SUB = (r, i) -> new Sub(r.getObject("id", UUID.class), r.getObject("tenant_id", UUID.class), r.getObject("plan_id", UUID.class), r.getString("billing_cycle"),
       r.getString("status"), r.getBigDecimal("price_snapshot"), r.getString("currency_code").trim(), ts(r, "trial_ends_at"), ts(r, "billing_anchor_at"), r.getInt("period_number"),
       ts(r, "current_period_start"), ts(r, "current_period_end"), r.getInt("grace_days"), r.getBoolean("cancel_at_period_end"));
@@ -31,6 +31,11 @@ class JdbcSubscriptionStore implements PlanRepository, SubscriptionRepository, I
       r.getString("tax_label"), r.getBigDecimal("tax_percent"), r.getBigDecimal("tax_amount"), r.getBigDecimal("total_amount"), r.getString("currency_code").trim(), r.getString("status"), ts(r, "due_at"));
   private static final RowMapper<Claim> CLAIM = (r, i) -> new Claim(r.getObject("id", UUID.class), r.getObject("tenant_id", UUID.class), r.getObject("invoice_id", UUID.class),
       r.getString("utr"), r.getString("status"), ts(r, "created_at"), r.getString("review_note"));
+  private static final com.fasterxml.jackson.databind.ObjectMapper JSON = new com.fasterxml.jackson.databind.ObjectMapper();
+  private static java.util.Map<String, Integer> roleLimits(String json) {
+    try { return json == null ? java.util.Map.of() : JSON.readValue(json, new com.fasterxml.jackson.core.type.TypeReference<java.util.Map<String, Integer>>() {}); }
+    catch (com.fasterxml.jackson.core.JsonProcessingException e) { return java.util.Map.of(); }
+  }
   private static String lock(boolean l) { return l ? " FOR UPDATE" : ""; }
 
   // ---- plans

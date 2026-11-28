@@ -11,4 +11,6 @@ public final class AuthDtos {
   public record LoginRequest(@NotBlank @Email String email, @NotBlank String password, @Pattern(regexp = "OWNER|MANAGER|CASHIER|CAPTAIN|KITCHEN|RIDER|INVENTORY|ACCOUNTANT") String role) {}
   public record UserView(UUID id, UUID tenantId, String name, String email, String role) {}
   public record TokenResponse(String accessToken, long expiresInSeconds, UserView user) {}
+  /** Body for the client plus the refresh token that the controller puts in an HttpOnly cookie (never in the body). */
+  public record AuthResult(TokenResponse body, String refreshToken) {}
 }

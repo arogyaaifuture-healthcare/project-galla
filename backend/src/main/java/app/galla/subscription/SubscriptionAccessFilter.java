@@ -18,8 +18,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
  */
 @Component
 public class SubscriptionAccessFilter extends OncePerRequestFilter {
-  private final SubscriptionService subscriptions;
-  public SubscriptionAccessFilter(SubscriptionService subscriptions) { this.subscriptions = subscriptions; }
+  private final SubscriptionService subscriptions; private final app.galla.user.UserRepository users;
+  public SubscriptionAccessFilter(SubscriptionService subscriptions, app.galla.user.UserRepository users) { this.subscriptions = subscriptions; this.users = users; }
 
   @Override protected boolean shouldNotFilterAsyncDispatch() { return true; }
   /** Spring Boot would also register a @Component filter with the servlet container; the security chain is the only place it must run. */
@@ -31,6 +31,8 @@ public class SubscriptionAccessFilter extends OncePerRequestFilter {
   @Override protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain) throws ServletException, IOException {
     Authentication a = SecurityContextHolder.getContext().getAuthentication();
     if (a != null && a.getPrincipal() instanceof Jwt j && "TENANT".equals(j.getClaimAsString("typ"))) {
+      // a user disabled by the owner (or a deactivated restaurant) loses access at once, not when the 15-minute token expires
+      if (!users.isActive(UUID.fromString(j.getSubject()))) { SecurityConfig.json(res, 401, "UNAUTHENTICATED", "Please sign in again"); return; }
       String path = req.getRequestURI();
       boolean alwaysAllowed = path.startsWith("/api/v1/subscription") || path.equals("/api/v1/me") || path.startsWith("/api/v1/auth/");
       if (!alwaysAllowed) {

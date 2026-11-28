@@ -7,4 +7,5 @@ app: { brand: { name: "${BRAND_NAME:Galla}" } }
 galla:
   jwt: { secret: "${GALLA_JWT_SECRET:}", platform-secret: "${GALLA_PLATFORM_JWT_SECRET:}", access-minutes: 15 }
   bootstrap: { admin-email: "${GALLA_BOOTSTRAP_ADMIN_EMAIL:}", admin-password: "${GALLA_BOOTSTRAP_ADMIN_PASSWORD:}" }
-  auth: { max-failed-logins: 5, lock-minutes: 15 }
+  auth: { max-failed-logins: 5, lock-minutes: 15, refresh-days: 30 }
+  cookie: { secure: "${GALLA_COOKIE_SECURE:true}" }

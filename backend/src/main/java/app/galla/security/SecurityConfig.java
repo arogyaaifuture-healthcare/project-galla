@@ -58,7 +58,7 @@ public class SecurityConfig {
     http.csrf(AbstractHttpConfigurer::disable) // stateless bearer-token API; the refresh cookie is SameSite=Strict and path-limited
         .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(a -> a
-            .requestMatchers("/api/v1/auth/login", "/api/v1/auth/register", "/api/v1/auth/refresh", "/api/v1/platform/auth/login", "/actuator/health/**", "/actuator/info").permitAll()
+            .requestMatchers("/api/v1/auth/login", "/api/v1/auth/register", "/api/v1/auth/refresh", "/api/v1/auth/logout", "/api/v1/platform/auth/login", "/actuator/health/**", "/actuator/info").permitAll()
             .requestMatchers("/api/v1/platform/**").hasAnyRole("SUPER_ADMIN", "SUPPORT")
             .anyRequest().hasAnyRole("OWNER", "MANAGER", "CASHIER", "CAPTAIN", "KITCHEN", "RIDER", "INVENTORY", "ACCOUNTANT"))
         .oauth2ResourceServer(o -> o.jwt(j -> j.jwtAuthenticationConverter(conv))

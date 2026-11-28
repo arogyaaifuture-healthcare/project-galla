@@ -5,7 +5,7 @@ type Category = { id: string; name: string; active: boolean }
 type Item = { id: string; categoryId: string; name: string; basePrice: string; foodType: string; available: boolean; version: number }
 type State = { kind: 'loading' } | { kind: 'error'; message: string } | { kind: 'ready'; outlet: Outlet; cats: Category[]; items: Item[] }
 
-export default function MenuPage({ session, onLogout }: { session: Session; onLogout: () => void }) {
+export default function MenuPage({ session }: { session: Session }) {
   const [st, setSt] = useState<State>({ kind: 'loading' })
   const [msg, setMsg] = useState<string | null>(null)
   const canEdit = session.user.role === 'OWNER' || session.user.role === 'MANAGER'
@@ -37,8 +37,7 @@ export default function MenuPage({ session, onLogout }: { session: Session; onLo
   }
 
   return (
-    <main className="app">
-      <header className="bar"><strong>Galla</strong><span className="muted">{session.user.name} · {session.user.role.toLowerCase()}</span><button className="btn" onClick={onLogout}>Sign out</button></header>
+    <div className="stack">
       <h2>Menu</h2>
       {msg && <div role="alert" className="alert">{msg}</div>}
       {st.kind === 'loading' && <p role="status">Loading menu…</p>}
@@ -59,5 +58,5 @@ export default function MenuPage({ session, onLogout }: { session: Session; onLo
                 : <ul className="items">{st.items.filter((i) => i.categoryId === c.id).map((i) => <li key={i.id}><span>{i.name}</span><span>₹{i.basePrice}</span></li>)}</ul>}
             </section>))}
       </>)}
-    </main>)
+    </div>)
 }

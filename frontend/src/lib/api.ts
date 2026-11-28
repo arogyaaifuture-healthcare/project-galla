@@ -22,7 +22,8 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   } catch {
     throw new ApiError(0, 'NETWORK', 'Cannot reach the server. Check your internet and try again.')
   }
-  if (res.ok) return (res.status === 204 ? undefined : await res.json()) as T
+  if (res.status === 402) window.dispatchEvent(new CustomEvent('galla:inactive'))
+  if (res.ok) { const text = await res.text(); return (text ? JSON.parse(text) : undefined) as T } // some endpoints answer 200 with no body
   let b: { code?: string; message?: string; details?: { field: string; message: string }[] } = {}
   try { b = await res.json() } catch { /* non-JSON error body */ }
   throw new ApiError(res.status, b.code ?? 'ERROR', b.message ?? 'Something went wrong. Please try again.', b.details ?? [])

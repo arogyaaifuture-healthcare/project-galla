@@ -3,7 +3,7 @@ import { api, ApiError, type Session } from '../lib/api'
 export const ROLES = ['OWNER', 'MANAGER', 'CASHIER', 'CAPTAIN', 'KITCHEN', 'RIDER', 'INVENTORY', 'ACCOUNTANT'] as const
 const label = (r: string) => r.charAt(0) + r.slice(1).toLowerCase()
 
-export default function Login({ onSession }: { onSession: (s: Session) => void }) {
+export default function Login({ onSession, onPlatform }: { onSession: (s: Session) => void; onPlatform?: () => void }) {
   const [mode, setMode] = useState<'login' | 'register'>('login')
   const [role, setRole] = useState<(typeof ROLES)[number]>('OWNER')
   const [busy, setBusy] = useState(false)
@@ -46,5 +46,6 @@ export default function Login({ onSession }: { onSession: (s: Session) => void }
       <button className="btn primary" type="submit" disabled={busy}>{busy ? 'Please wait…' : mode === 'login' ? 'Sign in' : 'Create account'}</button>
       <button type="button" className="btn" onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError(null); setFields({}) }}>
         {mode === 'login' ? 'New restaurant? Create an account' : 'Have an account? Sign in'}</button>
+      {onPlatform && <button type="button" className="link" onClick={onPlatform}>Galla owner? Platform sign-in</button>}
     </form>)
 }

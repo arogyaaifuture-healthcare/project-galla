@@ -49,7 +49,7 @@ class JdbcMenuRepository implements MenuRepository {
   @Override public Optional<ItemView> updateItem(UUID t, UUID id, long version, String name, BigDecimal price, Boolean available, Boolean active) {
     return db.sql("""
         UPDATE menu_items SET name=coalesce(:n,name), base_price=coalesce(:p,base_price), available=coalesce(:av,available), active=coalesce(:ac,active), version=version+1, updated_at=now()
-        WHERE id=:id AND tenant_id=:t AND version=:v RETURNING """ + ITEM_COLS)
+        WHERE id=:id AND tenant_id=:t AND version=:v RETURNING """ + " " + ITEM_COLS)
         .param("n", name).param("p", price).param("av", available).param("ac", active).param("id", id).param("t", t).param("v", version).query(ITEM).optional();
   }
   @Override public boolean itemExists(UUID t, UUID id) { return db.sql("SELECT 1 FROM menu_items WHERE id=:id AND tenant_id=:t").param("id", id).param("t", t).query().listOfRows().size() == 1; }

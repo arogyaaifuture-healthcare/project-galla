@@ -6,4 +6,4 @@ Restaurant billing: billing, KOT, UPI QR, offline mode, WhatsApp bills, inventor
 - `tools/` — database test suites and Python/JS reference specs
 - Run all: `docker compose up --build`
 ## Status
-Phase 1 (in progress): register, login (role selector, lockout), tenant-scoped menu API, login + menu screens. CI runs 12 backend tests, 4 frontend tests, 848 database cases (V001-V017), 230 reference tests.
+Phase 1 (in review, PR #2): self-signup with 30-day trial; login with role selector, lockout and refresh-cookie sessions (rotation + reuse detection); staff management with plan limits; restaurant details (GSTIN/FSSAI validated); tenant-scoped menu; audit/activity log; UPI-QR subscription payment with super-admin confirmation; platform console. CI: 38 backend tests, 14 frontend tests, 848 database cases, reference tests, and a real-browser end-to-end run with zero console errors.

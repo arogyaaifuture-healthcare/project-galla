@@ -7,4 +7,5 @@ public class ApiException extends RuntimeException {
   public HttpStatus status() { return status; }
   public String code() { return code; }
   public static ApiException notFound(String what) { return new ApiException(HttpStatus.NOT_FOUND, "NOT_FOUND", what + " not found"); }
+  public static ApiException conflict(String code, String msg) { return new ApiException(HttpStatus.CONFLICT, code, msg); }
 }

@@ -9,6 +9,6 @@ public final class AuthDtos {
       @NotBlank @Email @Size(max = 200) String email,
       @NotBlank @Size(min = 10, max = 100, message = "Password must be 10 to 100 characters") String password) {}
   public record LoginRequest(@NotBlank @Email String email, @NotBlank String password, @Pattern(regexp = "OWNER|MANAGER|CASHIER|CAPTAIN|KITCHEN|RIDER|INVENTORY|ACCOUNTANT") String role) {}
-  public record TokenResponse(String accessToken, long expiresInSeconds, UserView user) {}
   public record UserView(UUID id, UUID tenantId, String name, String email, String role) {}
+  public record TokenResponse(String accessToken, long expiresInSeconds, UserView user) {}
 }

@@ -12,4 +12,7 @@ public final class MenuDtos {
   public record ItemPatch(@Size(min = 1, max = 120) String name,
       @Pattern(regexp = "^\\d{1,10}(\\.\\d{1,2})?$", message = "Price must be a number with at most 2 decimals") String basePrice,
       Boolean available, Boolean active, @NotNull Long version) {}
+  public record CategoryView(UUID id, String name, int sortOrder, boolean active) {}
+  public record ItemView(UUID id, UUID categoryId, String name, String shortCode, String basePrice, String foodType, boolean available, boolean active, long version) {}
+  public record OutletView(UUID id, String code, String name, String currencySymbol) {}
 }

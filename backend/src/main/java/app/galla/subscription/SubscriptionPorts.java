@@ -22,11 +22,18 @@ public final class SubscriptionPorts {
     Optional<Sub> findByTenant(UUID tenantId, boolean lock);
     void activate(UUID id, String cycle, BigDecimal price, Instant anchor, int periodNumber, Instant start, Instant end);
     List<Map<String, Object>> overview();
+    /** Moves the end of a (still TRIALING) trial; returns false when the subscription is not in trial. */
+    boolean setTrialEnd(UUID id, Instant newEnd);
+    void setCancelAtPeriodEnd(UUID id, boolean cancel);
+    /** Platform switch for a whole restaurant: ACTIVE or SUSPENDED. */
+    boolean setTenantStatus(UUID tenantId, String status);
   }
   public interface InvoiceRepository {
     Invoice create(Sub sub, String planName, String cycle, Instant start, Instant end, BigDecimal amount, String taxLabel, BigDecimal taxPercent, BigDecimal taxAmount, Instant dueAt);
     Optional<Invoice> findOpen(UUID tenantId);
     Optional<Invoice> findInvoice(UUID invoiceId, boolean lock);
+    List<Invoice> listByTenant(UUID tenantId);
+    java.math.BigDecimal paidTotalSince(Instant since);
     void markPaid(UUID id);
     void voidInvoice(UUID id, String reason);
     void recordPayment(UUID tenantId, UUID invoiceId, BigDecimal amount, String reference, UUID platformUserId);

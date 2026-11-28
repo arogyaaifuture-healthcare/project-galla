@@ -8,6 +8,7 @@ import app.galla.subscription.SubscriptionPorts.*;
 import app.galla.subscription.UpiLink;
 import java.math.BigDecimal;
 import java.time.Clock;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -94,5 +95,42 @@ public class PlatformBillingService {
       out.add(m);
     }
     return out;
+  }
+
+  // ---- restaurant actions
+  /** Gives a restaurant still in its trial more days, counted from the later of now and the current end. */
+  @Transactional public Instant extendTrial(UUID adminId, UUID tenantId, int days, String reason) {
+    if (days < 1 || days > 90) throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, "VALIDATION_FAILED", "Days must be between 1 and 90");
+    requireReason(reason);
+    Sub s = subs.findByTenant(tenantId, true).orElseThrow(() -> ApiException.notFound("Restaurant"));
+    Instant base = s.trialEndsAt() != null && s.trialEndsAt().isAfter(clock.instant()) ? s.trialEndsAt() : clock.instant();
+    Instant end = base.plus(java.time.Duration.ofDays(days));
+    if (!subs.setTrialEnd(s.id(), end)) throw ApiException.conflict("NOT_IN_TRIAL", "This restaurant is not on a free trial");
+    audit.record(AuditEvent.platformUser(tenantId, adminId, "TRIAL_EXTENDED", "subscription", s.id(), Map.of("days", days, "trialEndsAt", end.toString()), reason.trim()));
+    return end;
+  }
+  @Transactional public void suspendRestaurant(UUID adminId, UUID tenantId, String reason) { setStatus(adminId, tenantId, "SUSPENDED", "RESTAURANT_SUSPENDED", reason); }
+  @Transactional public void reactivateRestaurant(UUID adminId, UUID tenantId, String reason) { setStatus(adminId, tenantId, "ACTIVE", "RESTAURANT_REACTIVATED", reason); }
+  private void setStatus(UUID adminId, UUID tenantId, String status, String action, String reason) {
+    requireReason(reason);
+    if (!subs.setTenantStatus(tenantId, status)) throw ApiException.notFound("Restaurant");
+    audit.record(AuditEvent.platformUser(tenantId, adminId, action, "tenant", tenantId, Map.of("status", status), reason.trim()));
+  }
+  private static void requireReason(String r) { if (r == null || r.trim().length() < 3) throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, "REASON_REQUIRED", "Please give a reason"); }
+
+  /** Headline numbers for the platform home screen. */
+  public Map<String, Object> dashboard() {
+    var counts = new java.util.TreeMap<String, Integer>();
+    int suspendedByAdmin = 0;
+    for (var r : restaurants()) {
+      if ("SUSPENDED".equals(r.get("tenantStatus"))) { suspendedByAdmin++; continue; }
+      counts.merge(String.valueOf(r.getOrDefault("effectiveStatus", "NO_SUBSCRIPTION")), 1, Integer::sum);
+    }
+    var monthStart = clock.instant().atZone(java.time.ZoneOffset.UTC).withDayOfMonth(1).toLocalDate().atStartOfDay(java.time.ZoneOffset.UTC).toInstant();
+    var m = new java.util.LinkedHashMap<String, Object>();
+    m.put("restaurantsByStatus", counts); m.put("suspendedByAdmin", suspendedByAdmin);
+    m.put("pendingPayments", claims.list("PENDING").size());
+    m.put("collectedThisMonth", invoices.paidTotalSince(monthStart).toPlainString());
+    return m;
   }
 }

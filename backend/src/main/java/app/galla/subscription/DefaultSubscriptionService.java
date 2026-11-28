@@ -51,7 +51,7 @@ class DefaultSubscriptionService implements SubscriptionService {
     ClaimView pending = open.flatMap(i -> claims.findPending(i.id())).map(c -> new ClaimView(c.id(), c.utr(), c.status(), c.createdAt(), c.reviewNote())).orElse(null);
     return new SubscriptionView(e.name(), p.name(), s.cycle(), s.trialEndsAt(), s.periodEnd(), days, p.priceMonthly().signum() > 0 && p.priceYearly().signum() > 0,
         p.priceMonthly().toPlainString(), p.priceYearly().toPlainString(), p.currency(), settings.get("expired_access_mode", "LOCKED"),
-        !settings.get("upi_vpa", "").isBlank(), open.map(this::invoiceView).orElse(null), pending);
+        !settings.get("upi_vpa", "").isBlank(), open.map(this::invoiceView).orElse(null), pending, s.cancelAtPeriodEnd());
   }
 
   @Override @Transactional public InvoiceView requestInvoice(UUID tenantId, UUID userId, String cycle) {
@@ -89,6 +89,28 @@ class DefaultSubscriptionService implements SubscriptionService {
     Invoice inv = invoices.create(s, p.name(), cycle, periodStart, periodEnd, price, settings.get("invoice_tax_label", "GST"), pct, tax, periodStart.isBefore(now) ? now : periodStart);
     audit.record(AuditEvent.tenantUser(tenantId, userId, "INVOICE_ISSUED", "subscription_invoice", inv.id(), Map.of("number", inv.number(), "total", inv.total().toPlainString())));
     return invoiceView(inv);
+  }
+
+  @Override @Transactional(readOnly = true) public java.util.List<InvoiceDetail> invoices(UUID tenantId) {
+    return invoices.listByTenant(tenantId).stream().map(i -> new InvoiceDetail(i.id(), i.number(), i.planName(), i.cycle(), i.periodStart(), i.periodEnd(), i.amountBeforeTax().toPlainString(), i.taxLabel(),
+        i.taxPercent().toPlainString(), i.taxAmount().toPlainString(), i.total().toPlainString(), i.currency(), i.status(), i.dueAt())).toList();
+  }
+
+  @Override @Transactional public void cancel(UUID tenantId, UUID userId) {
+    Sub s = sub(tenantId, true); Effective e = effective(s);
+    if (e == Effective.TRIALING) throw ApiException.conflict("TRIAL_NOTHING_TO_CANCEL", "You are on the free trial. It simply ends on its last day; nothing will be charged.");
+    if (e != Effective.ACTIVE && e != Effective.PAST_DUE) throw ApiException.conflict("NOT_CANCELLABLE", "There is no active plan to cancel.");
+    if (s.cancelAtPeriodEnd()) return;
+    subs.setCancelAtPeriodEnd(s.id(), true);
+    audit.record(AuditEvent.tenantUser(tenantId, userId, "SUBSCRIPTION_CANCEL_REQUESTED", "subscription", s.id(), Map.of("accessUntil", String.valueOf(s.periodEnd()))));
+  }
+
+  @Override @Transactional public void resume(UUID tenantId, UUID userId) {
+    Sub s = sub(tenantId, true);
+    if (!s.cancelAtPeriodEnd()) return;
+    if (effective(s) == Effective.CANCELLED) throw ApiException.conflict("SUBSCRIPTION_CANCELLED", "This plan has already ended. Choose a plan and pay to start again.");
+    subs.setCancelAtPeriodEnd(s.id(), false);
+    audit.record(AuditEvent.tenantUser(tenantId, userId, "SUBSCRIPTION_RESUMED", "subscription", s.id(), Map.of()));
   }
 
   @Override @Transactional public ClaimView submitClaim(UUID tenantId, UUID userId, UUID invoiceId, String utr) {

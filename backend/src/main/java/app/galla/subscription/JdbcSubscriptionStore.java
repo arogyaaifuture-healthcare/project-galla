@@ -70,7 +70,15 @@ class JdbcSubscriptionStore implements PlanRepository, SubscriptionRepository, I
       FROM tenants t LEFT JOIN subscriptions s ON s.tenant_id=t.id LEFT JOIN plans p ON p.id=s.plan_id ORDER BY t.created_at DESC LIMIT 500""").query().listOfRows();
   }
 
+  @Override public boolean setTrialEnd(UUID id, Instant end) {
+    return db.sql("UPDATE subscriptions SET trial_ends_at=:e, version=version+1, updated_at=now() WHERE id=:id AND status='TRIALING'").param("e", java.sql.Timestamp.from(end)).param("id", id).update() == 1;
+  }
+  @Override public void setCancelAtPeriodEnd(UUID id, boolean c) { db.sql("UPDATE subscriptions SET cancel_at_period_end=:c, version=version+1, updated_at=now() WHERE id=:id").param("c", c).param("id", id).update(); }
+  @Override public boolean setTenantStatus(UUID t, String status) { return db.sql("UPDATE tenants SET status=:s, updated_at=now() WHERE id=:id").param("s", status).param("id", t).update() == 1; }
+
   // ---- invoices
+  @Override public List<Invoice> listByTenant(UUID t) { return db.sql("SELECT * FROM subscription_invoices WHERE tenant_id=:t ORDER BY issued_at DESC LIMIT 100").param("t", t).query(INV).list(); }
+  @Override public BigDecimal paidTotalSince(Instant since) { return db.sql("SELECT coalesce(sum(total_amount),0) FROM subscription_invoices WHERE status='PAID' AND paid_at >= :s").param("s", java.sql.Timestamp.from(since)).query(BigDecimal.class).single(); }
   @Override public Invoice create(Sub s, String planName, String cycle, Instant start, Instant end, BigDecimal amount, String taxLabel, BigDecimal taxPct, BigDecimal tax, Instant due) {
     String number = String.format("GL-INV-%06d", nextCounter("subscription_invoice"));
     return db.sql("""

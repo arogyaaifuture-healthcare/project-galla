@@ -16,6 +16,8 @@ public class PlatformController {
   public record RejectRequest(@NotBlank @Size(min = 3, max = 300) String reason) {}
   public record PlanPatch(@Size(min = 1, max = 80) String name, @Pattern(regexp = "^\\d{1,8}(\\.\\d{1,2})?$") String priceMonthly, @Pattern(regexp = "^\\d{1,8}(\\.\\d{1,2})?$") String priceYearly,
       @Min(0) @Max(365) Integer trialDays, @Min(1) @Max(1000) Integer maxUsers, @Min(1) @Max(1000) Integer maxOutlets, Boolean active) {}
+  public record DaysRequest(@Min(1) @Max(90) int days, @NotBlank @Size(min = 3, max = 300) String reason) {}
+  public record ReasonRequest(@NotBlank @Size(min = 3, max = 300) String reason) {}
   public record Me(UUID id, String role) {}
 
   private static final String ADMIN = "hasRole('SUPER_ADMIN')";
@@ -36,4 +38,9 @@ public class PlatformController {
   @PatchMapping("/plans/{id}") @PreAuthorize(ADMIN)
   Plan patchPlan(@PathVariable UUID id, @Valid @RequestBody PlanPatch p) { return billing.updatePlan(CurrentUser.Platform.get().userId(), id, p.name(), p.priceMonthly(), p.priceYearly(), p.trialDays(), p.maxUsers(), p.maxOutlets(), p.active()); }
   @GetMapping("/tenants") @PreAuthorize(ADMIN) List<Map<String, Object>> tenants() { return billing.restaurants(); }
+
+  @GetMapping("/dashboard") @PreAuthorize(ADMIN) Map<String, Object> dashboard() { return billing.dashboard(); }
+  @PostMapping("/tenants/{id}/extend-trial") @PreAuthorize(ADMIN) Map<String, Object> extend(@PathVariable UUID id, @Valid @RequestBody DaysRequest r) { return Map.of("trialEndsAt", billing.extendTrial(CurrentUser.Platform.get().userId(), id, r.days(), r.reason()).toString()); }
+  @PostMapping("/tenants/{id}/suspend") @PreAuthorize(ADMIN) void suspend(@PathVariable UUID id, @Valid @RequestBody ReasonRequest r) { billing.suspendRestaurant(CurrentUser.Platform.get().userId(), id, r.reason()); }
+  @PostMapping("/tenants/{id}/reactivate") @PreAuthorize(ADMIN) void reactivate(@PathVariable UUID id, @Valid @RequestBody ReasonRequest r) { billing.reactivateRestaurant(CurrentUser.Platform.get().userId(), id, r.reason()); }
 }

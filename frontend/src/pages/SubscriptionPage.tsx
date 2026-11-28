@@ -5,7 +5,8 @@ import Qr from '../ui/Qr'
 
 export type Invoice = { id: string; number: string; amount: string; currency: string; cycle: string; periodStart: string; periodEnd: string; status: string; upiUri: string | null }
 export type Sub = { status: string; planName: string; cycle: string; trialEndsAt: string | null; periodEnd: string | null; daysLeft: number; pricingSet: boolean; priceMonthly: string; priceYearly: string
-  accessMode: string; upiConfigured: boolean; openInvoice: Invoice | null; pendingClaim: { utr: string; status: string } | null }
+  accessMode: string; upiConfigured: boolean; openInvoice: Invoice | null; pendingClaim: { utr: string; status: string } | null; cancelAtPeriodEnd?: boolean }
+type Detail = { id: string; number: string; planName: string; cycle: string; periodStart: string; periodEnd: string; amountBeforeTax: string; taxLabel: string | null; taxPercent: string; taxAmount: string; total: string; currency: string; status: string }
 const STATUS_TEXT: Record<string, string> = { TRIALING: 'Free trial', ACTIVE: 'Active', PAST_DUE: 'Payment overdue', SUSPENDED: 'Subscription ended', CANCELLED: 'Cancelled' }
 
 export default function SubscriptionPage({ isOwner }: { isOwner: boolean }) {
@@ -14,11 +15,19 @@ export default function SubscriptionPage({ isOwner }: { isOwner: boolean }) {
   const [cycle, setCycle] = useState<'MONTHLY' | 'YEARLY'>('MONTHLY')
   const [busy, setBusy] = useState(false)
   const [utr, setUtr] = useState('')
+  const [history, setHistory] = useState<Detail[]>([])
+  const [shown, setShown] = useState<Detail | null>(null)
   const load = useCallback(async () => {
     try { setSub(await api<Sub>('/subscription')); setError(null) }
     catch (e) { setError(e instanceof ApiError ? e.message : 'Could not load the subscription.') }
   }, [])
   useEffect(() => { void load() }, [load])
+  useEffect(() => { api<Detail[]>('/subscription/invoices').then((l) => setHistory(Array.isArray(l) ? l : [])).catch(() => setHistory([])) }, [sub?.status, sub?.openInvoice?.id, sub?.periodEnd])
+  async function plan(action: 'cancel' | 'resume') {
+    if (action === 'cancel' && !window.confirm('Cancel your plan? You keep full access until the end of the paid period, then it stops.')) return
+    setBusy(true); setError(null)
+    try { await api('/subscription/' + action, { method: 'POST' }); await load() } catch (e) { setError(e instanceof ApiError ? e.message : 'Could not update the plan.') } finally { setBusy(false) }
+  }
 
   async function pay() {
     setBusy(true); setError(null)
@@ -69,5 +78,25 @@ export default function SubscriptionPage({ isOwner }: { isOwner: boolean }) {
               <button className="btn primary" disabled={busy || utr.trim().length < 10}>I have paid</button>
             </form>)}
         </div>)}
+      {isOwner && sub.cancelAtPeriodEnd && (sub.status === 'ACTIVE' || sub.status === 'PAST_DUE') && (
+        <div role="status" className="banner warn">Your plan will end on {day(sub.periodEnd)} and will not renew. <button className="link" disabled={busy} onClick={() => void plan('resume')}>Keep my plan</button></div>)}
+      {isOwner && !sub.cancelAtPeriodEnd && (sub.status === 'ACTIVE' || sub.status === 'PAST_DUE') && (
+        <p><button className="btn" disabled={busy} onClick={() => void plan('cancel')}>Cancel plan</button></p>)}
+      {history.length > 0 && (
+        <div className="stack"><h3>Invoices</h3>
+          <table className="tbl"><thead><tr><th>Number</th><th>Period</th><th>Amount</th><th>Status</th><th /></tr></thead>
+            <tbody>{history.map((h) => <tr key={h.id}><td>{h.number}</td><td>{day(h.periodStart)} – {day(h.periodEnd)}</td><td>{rupees(h.total)}</td><td>{h.status === 'PAID' ? 'Paid' : h.status === 'DUE' ? 'Unpaid' : 'Cancelled'}</td>
+              <td><button className="btn" onClick={() => setShown(h)}>View</button></td></tr>)}</tbody></table></div>)}
+      {shown && (
+        <article className="print-invoice panel stack" aria-label={'Invoice ' + shown.number}>
+          <h3>Invoice {shown.number}</h3>
+          <p>Galla subscription · {shown.planName} ({shown.cycle.toLowerCase()})<br />Period {day(shown.periodStart)} – {day(shown.periodEnd)}</p>
+          <table className="tbl"><tbody>
+            <tr><td>Amount</td><td>{rupees(shown.amountBeforeTax)}</td></tr>
+            <tr><td>{shown.taxLabel ?? 'Tax'} ({shown.taxPercent}%)</td><td>{rupees(shown.taxAmount)}</td></tr>
+            <tr><td><strong>Total</strong></td><td><strong>{rupees(shown.total)}</strong></td></tr></tbody></table>
+          <p>Status: {shown.status === 'PAID' ? 'Paid' : shown.status === 'DUE' ? 'Unpaid' : 'Cancelled'}</p>
+          <p className="no-print"><button className="btn primary" onClick={() => window.print()}>Print</button> <button className="btn" onClick={() => setShown(null)}>Close</button></p>
+        </article>)}
     </section>)
 }

@@ -3,8 +3,8 @@ import { api, ApiError } from '../lib/api'
 import { day, rupees, when } from '../lib/format'
 type Claim = { id: string; status: string; utr: string; createdAt: string; restaurant: string; invoiceNumber: string; amount: string; cycle: string }
 type Plan = { id: string; name: string; priceMonthly: string; priceYearly: string; trialDays: number; maxUsers: number; maxOutlets: number; active: boolean }
-type Restaurant = { tenantId: string; name: string; email: string; plan: string | null; effectiveStatus?: string; trialEndsAt: string | null; periodEnd: string | null }
-type Tab = 'payments' | 'settings' | 'plans' | 'restaurants'
+type Restaurant = { tenantId: string; tenantStatus?: string; name: string; email: string; plan: string | null; effectiveStatus?: string; trialEndsAt: string | null; periodEnd: string | null }
+type Tab = 'overview' | 'payments' | 'settings' | 'plans' | 'restaurants'
 const msg = (e: unknown) => (e instanceof ApiError ? (e.details[0]?.message ?? e.message) : 'Something went wrong.')
 
 export default function PlatformConsole({ onLogout }: { onLogout: () => void }) {
@@ -13,9 +13,9 @@ export default function PlatformConsole({ onLogout }: { onLogout: () => void }) 
     <main className="app platform">
       <header className="bar"><strong>Galla · Platform <span className="badge">PLATFORM</span></strong><button className="btn" onClick={onLogout}>Sign out</button></header>
       <nav className="tabs" aria-label="Platform sections">
-        {(['payments', 'settings', 'plans', 'restaurants'] as Tab[]).map((t) => <button key={t} className={tab === t ? 'on' : ''} onClick={() => setTab(t)}>{t[0].toUpperCase() + t.slice(1)}</button>)}
+        {(['overview', 'payments', 'settings', 'plans', 'restaurants'] as Tab[]).map((t) => <button key={t} className={tab === t ? 'on' : ''} onClick={() => setTab(t)}>{t[0].toUpperCase() + t.slice(1)}</button>)}
       </nav>
-      {tab === 'payments' && <Payments />}{tab === 'settings' && <Settings />}{tab === 'plans' && <Plans />}{tab === 'restaurants' && <Restaurants />}
+      {tab === 'overview' && <Overview />}{tab === 'payments' && <Payments />}{tab === 'settings' && <Settings />}{tab === 'plans' && <Plans />}{tab === 'restaurants' && <Restaurants />}
     </main>)
 }
 
@@ -83,15 +83,40 @@ function Plans() {
     </section>)
 }
 
+type Dash = { restaurantsByStatus: Record<string, number>; suspendedByAdmin: number; pendingPayments: number; collectedThisMonth: string }
+const STATUS_LABEL: Record<string, string> = { TRIALING: 'On free trial', ACTIVE: 'Paying', PAST_DUE: 'Overdue (grace)', SUSPENDED: 'Locked (unpaid)', CANCELLED: 'Cancelled', NO_SUBSCRIPTION: 'No plan' }
+function Overview() {
+  const [d, setD] = useState<Dash | null>(null); const [error, setError] = useState<string | null>(null)
+  useEffect(() => { api<Dash>('/platform/dashboard').then(setD).catch((e) => setError(msg(e))) }, [])
+  if (error) return <div role="alert" className="alert">{error}</div>
+  if (!d) return <p role="status">Loading…</p>
+  return (
+    <section className="panel stack"><h2>Overview</h2>
+      <p><strong>{d.pendingPayments}</strong> payment{d.pendingPayments === 1 ? '' : 's'} waiting for you · <strong>{rupees(d.collectedThisMonth)}</strong> collected this month</p>
+      <table className="tbl"><tbody>
+        {Object.entries(d.restaurantsByStatus).map(([k, v]) => <tr key={k}><td>{STATUS_LABEL[k] ?? k}</td><td>{v}</td></tr>)}
+        <tr><td>Suspended by you</td><td>{d.suspendedByAdmin}</td></tr></tbody></table>
+    </section>)
+}
+
 function Restaurants() {
   const [rows, setRows] = useState<Restaurant[] | null>(null); const [error, setError] = useState<string | null>(null)
-  useEffect(() => { api<Restaurant[]>('/platform/tenants').then(setRows).catch((e) => setError(msg(e))) }, [])
-  if (error) return <div role="alert" className="alert">{error}</div>
-  if (!rows) return <p role="status">Loading…</p>
+  const load = useCallback(() => api<Restaurant[]>('/platform/tenants').then(setRows).catch((e) => setError(msg(e))), [])
+  useEffect(() => { void load() }, [load])
+  async function act(r: Restaurant, what: 'extend-trial' | 'suspend' | 'reactivate') {
+    const reason = window.prompt(what === 'extend-trial' ? 'Reason for extending the trial:' : `Reason to ${what} ${r.name}:`); if (!reason) return
+    let body: Record<string, unknown> = { reason }
+    if (what === 'extend-trial') { const days = Number(window.prompt('Extend by how many days? (1 to 90)', '7')); if (!days) return; body = { reason, days } }
+    setError(null)
+    try { await api(`/platform/tenants/${r.tenantId}/${what}`, { method: 'POST', body: JSON.stringify(body) }); await load() } catch (e) { setError(msg(e)) }
+  }
+  if (!rows) return error ? <div role="alert" className="alert">{error}</div> : <p role="status">Loading…</p>
   return (
-    <section className="panel"><h2>Restaurants ({rows.length})</h2>
+    <section className="panel">{error && <div role="alert" className="alert">{error}</div>}<h2>Restaurants ({rows.length})</h2>
       {rows.length === 0 ? <p className="muted">No restaurants yet.</p> : (
-        <table className="tbl"><thead><tr><th>Name</th><th>Email</th><th>Plan</th><th>Status</th><th>Ends</th></tr></thead>
-          <tbody>{rows.map((r) => <tr key={r.tenantId}><td>{r.name}</td><td>{r.email}</td><td>{r.plan ?? '—'}</td><td>{r.effectiveStatus ?? '—'}</td><td>{day(r.effectiveStatus === 'TRIALING' ? r.trialEndsAt : r.periodEnd)}</td></tr>)}</tbody></table>)}
+        <table className="tbl"><thead><tr><th>Name</th><th>Email</th><th>Plan</th><th>Status</th><th>Ends</th><th /></tr></thead>
+          <tbody>{rows.map((r) => <tr key={r.tenantId}><td>{r.name}</td><td>{r.email}</td><td>{r.plan ?? '—'}</td><td>{r.tenantStatus === 'SUSPENDED' ? 'Suspended' : r.effectiveStatus ?? '—'}</td><td>{day(r.effectiveStatus === 'TRIALING' ? r.trialEndsAt : r.periodEnd)}</td>
+            <td className="actions">{r.effectiveStatus === 'TRIALING' && <button className="btn" onClick={() => void act(r, 'extend-trial')}>Extend trial</button>}
+              {r.tenantStatus === 'SUSPENDED' ? <button className="btn" onClick={() => void act(r, 'reactivate')}>Reactivate</button> : <button className="btn" onClick={() => void act(r, 'suspend')}>Suspend</button>}</td></tr>)}</tbody></table>)}
     </section>)
 }

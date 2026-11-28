@@ -88,6 +88,22 @@ await owner.getByRole('button', { name: 'Settings' }).click()
 await owner.getByLabel('GSTIN').fill('NOT-A-GSTIN'); await owner.getByRole('button', { name: 'Save', exact: true }).click(); await expectText(owner, 'GSTIN must be 15 characters')
 await owner.getByLabel('GSTIN').fill('27ABCDE1234F1Z5'); await owner.getByLabel('City').fill('Pune'); await owner.getByRole('button', { name: 'Save', exact: true }).click(); await expectText(owner, 'Saved.'); step('restaurant details validate and save')
 
+// 8d. invoices, cancel and resume
+await owner.getByRole('button', { name: 'Subscription' }).click()
+await owner.getByRole('button', { name: 'View' }).click(); await expectText(owner, 'Invoice GL-INV-'); await owner.getByRole('button', { name: 'Close' }).click(); step('paid invoice is listed and can be opened')
+owner.once('dialog', (d) => d.accept())
+await owner.getByRole('button', { name: 'Cancel plan' }).click(); await owner.getByRole('button', { name: 'Keep my plan' }).click()
+await owner.getByRole('button', { name: 'Cancel plan' }).waitFor(); step('cancel and resume work')
+
+// 8e. platform overview, extend a trial, suspend and reactivate
+await admin.getByRole('button', { name: 'Overview' }).click(); await expectText(admin, 'collected this month'); step('platform overview loads')
+await admin.getByRole('button', { name: 'Restaurants' }).click()
+const row = admin.getByRole('row', { name: /Spice Hub/ }).first()
+const answers = ['testing the suspend flow']; admin.removeAllListeners('dialog'); admin.on('dialog', (d) => d.type() === 'prompt' ? d.accept(answers[0]) : d.accept())
+await row.getByRole('button', { name: 'Suspend' }).click(); await expectText(admin, 'Suspended')
+await owner.reload(); await owner.getByRole('button', { name: 'Sign in', exact: true }).waitFor({ timeout: 15000 }); step('suspended restaurant is signed out and cannot restore')
+await admin.getByRole('row', { name: /Spice Hub/ }).first().getByRole('button', { name: 'Reactivate' }).click(); await admin.getByRole('row', { name: /Spice Hub/ }).first().getByRole('button', { name: 'Suspend' }).waitFor(); step('reactivation works')
+
 // 9. phone-size layout has no sideways scroll
 await owner.setViewportSize({ width: 390, height: 800 })
 const overflow = await owner.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)

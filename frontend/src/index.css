@@ -21,3 +21,10 @@ label{display:grid;gap:6px;font-size:.9rem;color:var(--muted)}input,select{backg
 .seg{display:flex;gap:8px;flex-wrap:wrap}.seg button{border:1px solid var(--border);background:transparent;color:var(--text);border-radius:12px;padding:10px 14px;cursor:pointer;font:inherit}.seg .on{background:var(--accent);color:var(--accent-text)}
 .qr{border-radius:16px;background:#fff;padding:8px;justify-self:center}.qr-skeleton{background:var(--border);border-radius:16px;justify-self:center;opacity:.4}
 .platform .panel{max-width:100%;overflow-x:auto}
+
+@media print {
+  body * { visibility: hidden; }
+  .print-invoice, .print-invoice * { visibility: visible; }
+  .print-invoice { position: absolute; inset: 0 auto auto 0; width: 100%; box-shadow: none; }
+  .no-print { display: none !important; }
+}

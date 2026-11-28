@@ -3,3 +3,7 @@ dist/
 target/
 .env
 *.log
+e2e/node_modules/
+e2e/shots/
+api.log
+web.log

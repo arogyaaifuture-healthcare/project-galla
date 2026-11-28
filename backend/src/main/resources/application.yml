@@ -1,7 +1,11 @@
 spring:
   datasource: { url: "${DB_URL:jdbc:postgresql://localhost:5432/galla}", username: "${DB_USER:galla}", password: "${DB_PASSWORD:galla}", hikari: { maximum-pool-size: "${DB_POOL:10}" } }
-  jpa: { hibernate: { ddl-auto: validate }, open-in-view: false }
   flyway: { enabled: true }
 management: { endpoints: { web: { exposure: { include: "health,info,prometheus" } } }, endpoint: { health: { probes: { enabled: true } } } }
 server: { shutdown: graceful }
 app: { brand: { name: "${BRAND_NAME:Galla}" } }
+galla:
+  jwt: { secret: "${GALLA_JWT_SECRET:}", platform-secret: "${GALLA_PLATFORM_JWT_SECRET:}", access-minutes: 15 }
+  bootstrap: { admin-email: "${GALLA_BOOTSTRAP_ADMIN_EMAIL:}", admin-password: "${GALLA_BOOTSTRAP_ADMIN_PASSWORD:}" }
+  auth: { max-failed-logins: 5, lock-minutes: 15, refresh-days: 30 }
+  cookie: { secure: "${GALLA_COOKIE_SECURE:true}" }

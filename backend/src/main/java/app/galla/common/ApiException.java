@@ -1,0 +1,11 @@
+package app.galla.common;
+import org.springframework.http.HttpStatus;
+/** Error with a stable machine code (see plan Appendix B). */
+public class ApiException extends RuntimeException {
+  private final HttpStatus status; private final String code;
+  public ApiException(HttpStatus status, String code, String message) { super(message); this.status = status; this.code = code; }
+  public HttpStatus status() { return status; }
+  public String code() { return code; }
+  public static ApiException notFound(String what) { return new ApiException(HttpStatus.NOT_FOUND, "NOT_FOUND", what + " not found"); }
+  public static ApiException conflict(String code, String msg) { return new ApiException(HttpStatus.CONFLICT, code, msg); }
+}

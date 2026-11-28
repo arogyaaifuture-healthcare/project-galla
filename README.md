@@ -6,4 +6,4 @@ Restaurant billing: billing, KOT, UPI QR, offline mode, WhatsApp bills, inventor
 - `tools/` — database test suites and Python/JS reference specs
 - Run all: `docker compose up --build`
 ## Status
-Phase 0 scaffold. Database layer verified (848 cases). Backend skeleton unverified until CI runs. See docs §29.2 for what is not verified.
+Phase 1 (in progress): register, login (role selector, lockout), tenant-scoped menu API, login + menu screens. CI runs 12 backend tests, 4 frontend tests, 848 database cases, 230 reference tests.

@@ -28,7 +28,7 @@ await expectText(owner, 'Free trial: 30 days left'); step('register starts a 30-
 
 // 2. menu
 await owner.getByLabel('Category name').fill('Starters'); await owner.getByRole('button', { name: 'Add category' }).click()
-await expectText(owner, 'Starters')
+await owner.getByRole('heading', { name: 'Starters' }).waitFor()
 await owner.getByLabel('Item name').fill('Paneer Tikka'); await owner.getByLabel('Price').fill('120.50'); await owner.getByRole('button', { name: 'Add item' }).click()
 await expectText(owner, '₹120.50'); await owner.screenshot({ path: 'shots/1-menu.png' }); step('menu category and item added')
 

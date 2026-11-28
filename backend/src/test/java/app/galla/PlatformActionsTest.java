@@ -41,8 +41,8 @@ class PlatformActionsTest extends IntegrationBase {
     var r = mvc.perform(post("/api/v1/platform/auth/login").contentType(MediaType.APPLICATION_JSON).content(json(Map.of("email", "root@galla.test", "password", "super-admin-pass-1")))).andExpect(status().isOk()).andReturn();
     return "Bearer " + body(r).get("accessToken").asText();
   }
-  void post(String url, String auth, Object b, int expected) throws Exception {
-    mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post(url).header("Authorization", auth).contentType(MediaType.APPLICATION_JSON).content(json(b))).andExpect(status().is(expected));
+  void call(String url, String auth, Object b, int expected) throws Exception {
+    mvc.perform(post(url).header("Authorization", auth).contentType(MediaType.APPLICATION_JSON).content(json(b))).andExpect(status().is(expected));
   }
   /** Registers, ends the trial, requests an invoice, submits a UTR and has the super admin confirm it. */
   Acct paid() throws Exception {
@@ -50,9 +50,9 @@ class PlatformActionsTest extends IntegrationBase {
     jdbc.update("update subscriptions set trial_ends_at = now() - interval '10 days' where tenant_id=?", a.tenant());
     String inv = body(mvc.perform(post("/api/v1/subscription/invoices").header("Authorization", a.auth()).contentType(MediaType.APPLICATION_JSON).content(json(Map.of("cycle", "MONTHLY")))).andExpect(status().isOk()).andReturn()).get("id").asText();
     String utr = "UTR" + System.nanoTime(); utr = utr.substring(0, Math.min(utr.length(), 20));
-    post("/api/v1/subscription/invoices/" + inv + "/claim", a.auth(), Map.of("utr", utr), 201);
+    call("/api/v1/subscription/invoices/" + inv + "/claim", a.auth(), Map.of("utr", utr), 201);
     String claim = jdbc.queryForObject("select id::text from payment_claims where utr=?", String.class, utr.toUpperCase());
-    mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/api/v1/platform/claims/" + claim + "/confirm").header("Authorization", adm)).andExpect(status().isOk());
+    mvc.perform(post("/api/v1/platform/claims/" + claim + "/confirm").header("Authorization", adm)).andExpect(status().isOk());
     return a;
   }
 
@@ -60,30 +60,30 @@ class PlatformActionsTest extends IntegrationBase {
     var a = register(); String adm = admin();
     jdbc.update("update subscriptions set trial_ends_at = now() - interval '10 days' where tenant_id=?", a.tenant());
     mvc.perform(get("/api/v1/outlets").header("Authorization", a.auth())).andExpect(status().isPaymentRequired());
-    post("/api/v1/platform/tenants/" + a.tenant() + "/extend-trial", adm, Map.of("days", 100, "reason", "goodwill"), 422);
-    post("/api/v1/platform/tenants/" + a.tenant() + "/extend-trial", adm, Map.of("days", 5), 422);
-    post("/api/v1/platform/tenants/" + a.tenant() + "/extend-trial", adm, Map.of("days", 5, "reason", "onboarding delay"), 200);
+    call("/api/v1/platform/tenants/" + a.tenant() + "/extend-trial", adm, Map.of("days", 100, "reason", "goodwill"), 422);
+    call("/api/v1/platform/tenants/" + a.tenant() + "/extend-trial", adm, Map.of("days", 5), 422);
+    call("/api/v1/platform/tenants/" + a.tenant() + "/extend-trial", adm, Map.of("days", 5, "reason", "onboarding delay"), 200);
     mvc.perform(get("/api/v1/outlets").header("Authorization", a.auth())).andExpect(status().isOk());
     mvc.perform(get("/api/v1/subscription").header("Authorization", a.auth())).andExpect(jsonPath("$.status").value("TRIALING")).andExpect(jsonPath("$.daysLeft").value(5));
     Assertions_eq(1, jdbc.queryForObject("select count(*) from audit_logs where tenant_id=? and action='TRIAL_EXTENDED'", Integer.class, a.tenant()));
-    post("/api/v1/platform/tenants/" + UUID.randomUUID() + "/extend-trial", adm, Map.of("days", 5, "reason", "unknown"), 404);
+    call("/api/v1/platform/tenants/" + UUID.randomUUID() + "/extend-trial", adm, Map.of("days", 5, "reason", "unknown"), 404);
   }
   @Test void paidRestaurantsCannotGetATrialExtension() throws Exception {
     var a = paid();
-    post("/api/v1/platform/tenants/" + a.tenant() + "/extend-trial", admin(), Map.of("days", 5, "reason", "try"), 409);
+    call("/api/v1/platform/tenants/" + a.tenant() + "/extend-trial", admin(), Map.of("days", 5, "reason", "try"), 409);
   }
   @Test void suspendingARestaurantCutsEveryoneOffUntilReactivated() throws Exception {
     var a = register(); String adm = admin();
-    post("/api/v1/platform/tenants/" + a.tenant() + "/suspend", adm, Map.of("reason", "abuse report"), 200);
+    call("/api/v1/platform/tenants/" + a.tenant() + "/suspend", adm, Map.of("reason", "abuse report"), 200);
     mvc.perform(get("/api/v1/outlets").header("Authorization", a.auth())).andExpect(status().isUnauthorized());
     mvc.perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON).content(json(Map.of("email", a.email(), "password", PW)))).andExpect(status().isForbidden());
     mvc.perform(post("/api/v1/auth/refresh").cookie(new Cookie("galla_rt", a.cookie()))).andExpect(status().isUnauthorized());
-    post("/api/v1/platform/tenants/" + a.tenant() + "/reactivate", adm, Map.of("reason", "resolved"), 200);
+    call("/api/v1/platform/tenants/" + a.tenant() + "/reactivate", adm, Map.of("reason", "resolved"), 200);
     mvc.perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON).content(json(Map.of("email", a.email(), "password", PW)))).andExpect(status().isOk());
   }
   @Test void platformActionsAreForTheSuperAdminOnly() throws Exception {
     var a = register();
-    post("/api/v1/platform/tenants/" + a.tenant() + "/suspend", a.auth(), Map.of("reason", "nope nope"), 403);
+    call("/api/v1/platform/tenants/" + a.tenant() + "/suspend", a.auth(), Map.of("reason", "nope nope"), 403);
     mvc.perform(get("/api/v1/platform/dashboard").header("Authorization", a.auth())).andExpect(status().isForbidden());
     mvc.perform(get("/api/v1/platform/dashboard")).andExpect(status().isUnauthorized());
   }
@@ -97,19 +97,19 @@ class PlatformActionsTest extends IntegrationBase {
     var a = paid();
     mvc.perform(get("/api/v1/subscription/invoices").header("Authorization", a.auth())).andExpect(status().isOk()).andExpect(jsonPath("$", hasSize(1)))
         .andExpect(jsonPath("$[0].status").value("PAID")).andExpect(jsonPath("$[0].total").value("500.00")).andExpect(jsonPath("$[0].number", startsWith("GL-INV-")));
-    post("/api/v1/subscription/cancel", a.auth(), Map.of(), 200); post("/api/v1/subscription/cancel", a.auth(), Map.of(), 200);   // idempotent
+    call("/api/v1/subscription/cancel", a.auth(), Map.of(), 200); call("/api/v1/subscription/cancel", a.auth(), Map.of(), 200);   // idempotent
     mvc.perform(get("/api/v1/subscription").header("Authorization", a.auth())).andExpect(jsonPath("$.cancelAtPeriodEnd").value(true)).andExpect(jsonPath("$.status").value("ACTIVE"));
-    post("/api/v1/subscription/resume", a.auth(), Map.of(), 200);
+    call("/api/v1/subscription/resume", a.auth(), Map.of(), 200);
     mvc.perform(get("/api/v1/subscription").header("Authorization", a.auth())).andExpect(jsonPath("$.cancelAtPeriodEnd").value(false));
     // once the paid period is over, a cancelled plan stays cancelled
-    post("/api/v1/subscription/cancel", a.auth(), Map.of(), 200);
+    call("/api/v1/subscription/cancel", a.auth(), Map.of(), 200);
     jdbc.update("update subscriptions set current_period_end = now() - interval '1 day' where tenant_id=?", a.tenant());
     mvc.perform(get("/api/v1/subscription").header("Authorization", a.auth())).andExpect(jsonPath("$.status").value("CANCELLED"));
-    post("/api/v1/subscription/resume", a.auth(), Map.of(), 409);
+    call("/api/v1/subscription/resume", a.auth(), Map.of(), 409);
   }
   @Test void trialsCannotBeCancelledAndInvoicesAreTenantScoped() throws Exception {
     var a = register(); var b = paid();
-    post("/api/v1/subscription/cancel", a.auth(), Map.of(), 409);
+    call("/api/v1/subscription/cancel", a.auth(), Map.of(), 409);
     mvc.perform(get("/api/v1/subscription/invoices").header("Authorization", a.auth())).andExpect(jsonPath("$", hasSize(0)));
     mvc.perform(get("/api/v1/subscription/invoices").header("Authorization", b.auth())).andExpect(jsonPath("$", hasSize(1)));
   }

@@ -1,0 +1,557 @@
+INSERT 0 1
+INSERT 0 2
+INSERT 0 1
+INSERT 0 3
+INSERT 0 2
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 2
+INSERT 0 1
+--- OK expected: integration account
+INSERT 0 1
+--- FAIL expected: same outlet+provider+store twice (unique)
+ERROR:  duplicate key value violates unique constraint "integration_accounts_outlet_id_provider_external_store_id_key"
+DETAIL:  Key (outlet_id, provider, external_store_id)=(00000000-0000-0000-0000-0000000000a1, provx, S1) already exists.
+--- FAIL expected: same provider store id on another outlet while the first is active (ux_integration_store_per_provider)
+ERROR:  duplicate key value violates unique constraint "ux_integration_store_per_provider"
+DETAIL:  Key (provider, external_store_id)=(provx, S1) already exists.
+--- FAIL expected: provider code with upper case / punctuation
+ERROR:  new row for relation "integration_accounts" violates check constraint "integration_accounts_provider_check"
+DETAIL:  Failing row contains (35737cfa-5cf5-43e5-a61e-5f0cbe837027, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, Prov-X, AGGREGATOR, Bad, S9, enc, null, PENDING, f, 180, t, null, null, 2026-11-27 16:23:13.318078+00, 2026-11-27 16:23:13.318078+00, 0).
+--- FAIL expected: accept SLA below 30 seconds
+ERROR:  new row for relation "integration_accounts" violates check constraint "integration_accounts_accept_sla_seconds_check"
+DETAIL:  Failing row contains (f528517d-a68d-4775-8cb9-4aee138940a9, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, provy, AGGREGATOR, Bad, S9, enc, null, PENDING, f, 10, t, null, null, 2026-11-27 16:23:13.318225+00, 2026-11-27 16:23:13.318225+00, 0).
+--- FAIL expected: accept SLA above 3600 seconds
+ERROR:  new row for relation "integration_accounts" violates check constraint "integration_accounts_accept_sla_seconds_check"
+DETAIL:  Failing row contains (5e283e9f-b5a3-419b-a87a-39d7a964c6ad, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, provy, AGGREGATOR, Bad, S9, enc, null, PENDING, f, 4000, t, null, null, 2026-11-27 16:23:13.318351+00, 2026-11-27 16:23:13.318351+00, 0).
+--- FAIL expected: invalid account status
+ERROR:  new row for relation "integration_accounts" violates check constraint "integration_accounts_status_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-00000000aa01, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, provx, AGGREGATOR, Provider X, S1, enc, null, LIVE, f, 180, t, null, null, 2026-11-27 16:23:13.316782+00, 2026-11-27 16:23:13.316782+00, 0).
+--- FAIL expected: invalid account kind
+ERROR:  new row for relation "integration_accounts" violates check constraint "integration_accounts_kind_check"
+DETAIL:  Failing row contains (f0e99a4f-599f-49b0-9880-292c45485cbe, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, provy, DIRECT, Bad, S9, enc, null, PENDING, f, 180, t, null, null, 2026-11-27 16:23:13.318726+00, 2026-11-27 16:23:13.318726+00, 0).
+--- FAIL expected: credentials missing
+ERROR:  null value in column "credentials_encrypted" of relation "integration_accounts" violates not-null constraint
+DETAIL:  Failing row contains (31b01948-e2a1-4e66-8fb7-799c96dd5c71, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, provy, AGGREGATOR, Bad, S9, null, null, PENDING, f, 180, t, null, null, 2026-11-27 16:23:13.318852+00, 2026-11-27 16:23:13.318852+00, 0).
+--- OK expected: a second account for the same provider on the same outlet with another store id
+INSERT 0 1
+--- OK expected: after DISABLED the store id can be connected on another outlet
+UPDATE 1
+INSERT 0 1
+--- OK expected: item mapping (no variant)
+INSERT 0 1
+--- FAIL expected: same external item + variant twice (unique)
+ERROR:  duplicate key value violates unique constraint "external_item_mappings_integration_account_id_external_item_key"
+DETAIL:  Key (integration_account_id, external_item_id, external_variant_id)=(00000000-0000-0000-0000-00000000aa02, X1, ) already exists.
+--- OK expected: same external item with a variant is its own row
+INSERT 0 1
+--- FAIL expected: same external variant twice (unique)
+ERROR:  duplicate key value violates unique constraint "external_item_mappings_integration_account_id_external_item_key"
+DETAIL:  Key (integration_account_id, external_item_id, external_variant_id)=(00000000-0000-0000-0000-00000000aa02, X1, L) already exists.
+--- OK expected: same external ids on another account
+INSERT 0 1
+--- FAIL expected: MAPPED row without an internal item
+ERROR:  new row for relation "external_item_mappings" violates check constraint "external_item_mappings_check"
+DETAIL:  Failing row contains (efa31c8c-a035-47cb-8699-d250eed57ccc, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-00000000aa02, X2, , null, MAPPED, null, null, null, 2026-11-27 16:23:13.322646+00).
+--- FAIL expected: IGNORED row that also points to an item
+ERROR:  new row for relation "external_item_mappings" violates check constraint "external_item_mappings_check1"
+DETAIL:  Failing row contains (c4095f84-bb8c-4b89-93ba-dd714eef8560, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-00000000aa02, X3, , null, IGNORED, 00000000-0000-0000-0000-0000000000c1, null, null, 2026-11-27 16:23:13.322779+00).
+--- OK expected: IGNORED row (a fee line, not a food item)
+INSERT 0 1
+--- FAIL expected: variant without an item (caught by the MAPPED rule; the third CHECK is belt and braces)
+ERROR:  new row for relation "external_item_mappings" violates check constraint "external_item_mappings_check"
+DETAIL:  Failing row contains (8ba2740e-c235-4f7a-a9cd-ec5bedf605e8, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-00000000aa02, X4, , null, MAPPED, null, 00000000-0000-0000-0000-0000000000d1, null, 2026-11-27 16:23:13.323361+00).
+--- FAIL expected: invalid mapping status
+ERROR:  new row for relation "external_item_mappings" violates check constraint "external_item_mappings_status_check"
+DETAIL:  Failing row contains (8441967c-7465-4dc7-ba7b-aa0150bd08bd, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-00000000aa02, X5, , null, PENDING, 00000000-0000-0000-0000-0000000000c1, null, null, 2026-11-27 16:23:13.323471+00).
+--- FAIL expected: mapping to an item that does not exist
+ERROR:  insert or update on table "external_item_mappings" violates foreign key constraint "external_item_mappings_menu_item_id_fkey"
+DETAIL:  Key (menu_item_id)=(00000000-0000-0000-0000-00000000dead) is not present in table "menu_items".
+--- OK expected: deleting an account removes its mappings (cascade) - checked by count below
+INSERT 0 1
+INSERT 0 1
+DELETE 1
+ mappings_left_must_be_0 
+-------------------------
+                       0
+(1 row)
+
+--- OK expected: inbound order RECEIVED
+INSERT 0 1
+--- FAIL expected: the same provider order delivered again (unique account+order id)
+ERROR:  duplicate key value violates unique constraint "external_orders_integration_account_id_external_order_id_key"
+DETAIL:  Key (integration_account_id, external_order_id)=(00000000-0000-0000-0000-00000000aa02, ORD-1) already exists.
+--- OK expected: same external order id on another account is a different order
+INSERT 0 1
+--- FAIL expected: payload missing
+ERROR:  null value in column "payload" of relation "external_orders" violates not-null constraint
+DETAIL:  Failing row contains (80527782-0267-4495-9d13-6c0d7d8a9902, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-00000000aa02, provx, ORD-N, RECEIVED, null, 2026-11-27 16:23:13.328664+00, 2026-11-27 16:26:13.328664+00, null, null, f, null, null, null, UNKNOWN, null, null, null, null, null, 2026-11-27 16:23:13.328664+00, 2026-11-27 16:23:13.328664+00, 0).
+--- FAIL expected: accept_by not after received_at
+ERROR:  new row for relation "external_orders" violates check constraint "external_orders_check"
+DETAIL:  Failing row contains (7c987507-61ec-45d0-846f-5dcad8bba098, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-00000000aa02, provx, ORD-2, RECEIVED, {}, 2026-11-27 16:23:13.328834+00, 2026-11-27 16:22:13.328834+00, null, null, f, null, null, null, UNKNOWN, null, null, null, null, null, 2026-11-27 16:23:13.328834+00, 2026-11-27 16:23:13.328834+00, 0).
+--- FAIL expected: invalid inbox status
+ERROR:  new row for relation "external_orders" violates check constraint "external_orders_status_check"
+DETAIL:  Failing row contains (a385b278-cac7-43b0-8fe3-7b7cbd9898ad, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-00000000aa02, provx, ORD-3, DONE, {}, 2026-11-27 16:23:13.329071+00, 2026-11-27 16:24:13.329071+00, null, null, f, null, null, null, UNKNOWN, null, null, null, null, null, 2026-11-27 16:23:13.329071+00, 2026-11-27 16:23:13.329071+00, 0).
+--- FAIL expected: ACCEPTED without an internal order
+ERROR:  new row for relation "external_orders" violates check constraint "external_orders_check1"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-00000000ee01, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-00000000aa02, provx, ORD-1, ACCEPTED, {"k": 1}, 2026-11-27 16:23:13.326737+00, 2026-11-27 16:26:13.326737+00, 2026-11-27 16:23:13.329239+00, null, t, null, null, null, UNKNOWN, null, null, null, null, null, 2026-11-27 16:23:13.326737+00, 2026-11-27 16:23:13.326737+00, 0).
+--- FAIL expected: REJECTED without a reason
+ERROR:  new row for relation "external_orders" violates check constraint "external_orders_check2"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-00000000ee01, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-00000000aa02, provx, ORD-1, REJECTED, {"k": 1}, 2026-11-27 16:23:13.326737+00, 2026-11-27 16:26:13.326737+00, null, null, f, null, null, null, UNKNOWN, null, null, null, null, null, 2026-11-27 16:23:13.326737+00, 2026-11-27 16:23:13.326737+00, 0).
+--- FAIL expected: REJECTED with a blank reason
+ERROR:  new row for relation "external_orders" violates check constraint "external_orders_check2"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-00000000ee01, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-00000000aa02, provx, ORD-1, REJECTED, {"k": 1}, 2026-11-27 16:23:13.326737+00, 2026-11-27 16:26:13.326737+00, null, null, f,    , null, null, UNKNOWN, null, null, null, null, null, 2026-11-27 16:23:13.326737+00, 2026-11-27 16:23:13.326737+00, 0).
+--- FAIL expected: an acceptance with neither a user nor the auto-accept flag
+ERROR:  new row for relation "external_orders" violates check constraint "external_orders_check3"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-00000000ee01, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-00000000aa02, provx, ORD-1, RECEIVED, {"k": 1}, 2026-11-27 16:23:13.326737+00, 2026-11-27 16:26:13.326737+00, 2026-11-27 16:23:13.329839+00, null, f, null, null, null, UNKNOWN, null, null, null, null, null, 2026-11-27 16:23:13.326737+00, 2026-11-27 16:23:13.326737+00, 0).
+--- OK expected: auto-accepted with internal order
+UPDATE 1
+--- FAIL expected: a second inbox row pointing at the same internal order
+ERROR:  duplicate key value violates unique constraint "ux_external_orders_internal_order"
+DETAIL:  Key (order_id)=(00000000-0000-0000-0000-0000000000e3) already exists.
+--- OK expected: rejected with reason by a user
+UPDATE 1
+--- FAIL expected: commission percent above 100
+ERROR:  new row for relation "external_orders" violates check constraint "external_orders_commission_percent_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-00000000ee01, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-00000000aa02, provx, ORD-1, ACCEPTED, {"k": 1}, 2026-11-27 16:23:13.326737+00, 2026-11-27 16:26:13.326737+00, 2026-11-27 16:23:13.330029+00, null, t, null, null, 00000000-0000-0000-0000-0000000000e3, UNKNOWN, null, 100.01, null, null, null, 2026-11-27 16:23:13.326737+00, 2026-11-27 16:23:13.326737+00, 0).
+--- FAIL expected: negative settlement amount
+ERROR:  new row for relation "external_orders" violates check constraint "external_orders_settlement_amount_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-00000000ee01, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-00000000aa02, provx, ORD-1, ACCEPTED, {"k": 1}, 2026-11-27 16:23:13.326737+00, 2026-11-27 16:26:13.326737+00, 2026-11-27 16:23:13.330029+00, null, t, null, null, 00000000-0000-0000-0000-0000000000e3, UNKNOWN, null, null, null, -1.00, null, 2026-11-27 16:23:13.326737+00, 2026-11-27 16:23:13.326737+00, 0).
+--- FAIL expected: negative provider total
+ERROR:  new row for relation "external_orders" violates check constraint "external_orders_provider_order_total_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-00000000ee01, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-00000000aa02, provx, ORD-1, ACCEPTED, {"k": 1}, 2026-11-27 16:23:13.326737+00, 2026-11-27 16:26:13.326737+00, 2026-11-27 16:23:13.330029+00, null, t, null, null, 00000000-0000-0000-0000-0000000000e3, UNKNOWN, -5.00, null, null, null, null, 2026-11-27 16:23:13.326737+00, 2026-11-27 16:23:13.326737+00, 0).
+--- FAIL expected: invalid payment mode
+ERROR:  new row for relation "external_orders" violates check constraint "external_orders_payment_mode_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-00000000ee01, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-00000000aa02, provx, ORD-1, ACCEPTED, {"k": 1}, 2026-11-27 16:23:13.326737+00, 2026-11-27 16:26:13.326737+00, 2026-11-27 16:23:13.330029+00, null, t, null, null, 00000000-0000-0000-0000-0000000000e3, CARD, null, null, null, null, null, 2026-11-27 16:23:13.326737+00, 2026-11-27 16:23:13.326737+00, 0).
+--- OK expected: commission and settlement recorded as given
+UPDATE 1
+--- OK expected: status event with provider event id
+INSERT 0 1
+--- FAIL expected: the same provider event id again for the same order
+ERROR:  duplicate key value violates unique constraint "ux_ext_events_provider_event"
+DETAIL:  Key (external_order_id, provider_event_id)=(00000000-0000-0000-0000-00000000ee01, pe1) already exists.
+--- OK expected: same provider event id for a different order
+INSERT 0 1
+--- OK expected: events without a provider event id may repeat
+INSERT 0 1
+INSERT 0 1
+--- FAIL expected: invalid direction
+ERROR:  new row for relation "external_status_events" violates check constraint "external_status_events_direction_check"
+DETAIL:  Failing row contains (6, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-00000000ee01, SIDEWAYS, X, null, null, null, 2026-11-27 16:23:13.336489+00).
+--- FAIL expected: UPDATE of an event row (append-only)
+ERROR:  UPDATE on external_status_events is not allowed (append-only table)
+CONTEXT:  PL/pgSQL function galla_block_mutation() line 3 at RAISE
+--- FAIL expected: DELETE of an event row (append-only)
+ERROR:  DELETE on external_status_events is not allowed (append-only table)
+CONTEXT:  PL/pgSQL function galla_block_mutation() line 3 at RAISE
+--- OK expected: poll job needs no order
+INSERT 0 1
+--- FAIL expected: ACCEPT job without an external order
+ERROR:  new row for relation "integration_sync_jobs" violates check constraint "integration_sync_jobs_check"
+DETAIL:  Failing row contains (4d69681a-3be2-482a-8363-4e394d8e0821, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-00000000aa02, ACCEPT, null, null, PENDING, 0, 2026-11-27 16:23:13.338808+00, null, null, 2026-11-27 16:23:13.338808+00, null).
+--- OK expected: ACCEPT job with order and dedupe key
+INSERT 0 1
+--- FAIL expected: same dedupe key twice
+ERROR:  duplicate key value violates unique constraint "integration_sync_jobs_dedupe_key_key"
+DETAIL:  Key (dedupe_key)=(ext:ORD-1:ACCEPT) already exists.
+--- FAIL expected: unknown job type
+ERROR:  new row for relation "integration_sync_jobs" violates check constraint "integration_sync_jobs_job_type_check"
+DETAIL:  Failing row contains (a57f34fd-2e80-4f53-821d-6c362fc0f9af, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-00000000aa02, DELETE_EVERYTHING, null, null, PENDING, 0, 2026-11-27 16:23:13.339871+00, null, null, 2026-11-27 16:23:13.339871+00, null).
+--- FAIL expected: SENT without sent_at
+ERROR:  new row for relation "integration_sync_jobs" violates check constraint "integration_sync_jobs_check1"
+DETAIL:  Failing row contains (47175a4a-fc93-4342-821b-2c1d59ba6be9, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-00000000aa02, MENU_PUSH, null, null, SENT, 0, 2026-11-27 16:23:13.340093+00, null, null, 2026-11-27 16:23:13.340093+00, null).
+--- FAIL expected: negative attempts
+ERROR:  new row for relation "integration_sync_jobs" violates check constraint "integration_sync_jobs_attempts_check"
+DETAIL:  Failing row contains (92ac2019-5000-4553-9490-cf54a8553fd8, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-00000000aa02, MENU_PUSH, null, null, PENDING, -1, 2026-11-27 16:23:13.340256+00, null, null, 2026-11-27 16:23:13.340256+00, null).
+--- OK expected: typed payout
+INSERT 0 1
+--- FAIL expected: period end before start
+ERROR:  new row for relation "partner_payouts" violates check constraint "partner_payouts_check"
+DETAIL:  Failing row contains (2b004925-546b-41e2-be6b-58aee3651f32, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-00000000aa02, 2026-11-08, 2026-11-07, 1.00, null, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:13.341303+00).
+--- FAIL expected: negative payout
+ERROR:  new row for relation "partner_payouts" violates check constraint "partner_payouts_amount_received_check"
+DETAIL:  Failing row contains (f1e802b9-ca34-4646-8385-36981c3d32c4, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-00000000aa02, 2026-11-01, 2026-11-07, -1.00, null, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:13.341486+00).
+--- OK expected: intent CREATED for bill 1
+INSERT 0 1
+--- FAIL expected: a second live intent for the same bill (ux_intent_one_active_per_bill)
+ERROR:  duplicate key value violates unique constraint "ux_intent_one_active_per_bill"
+DETAIL:  Key (bill_id)=(00000000-0000-0000-0000-000000000b11) already exists.
+--- FAIL expected: amount zero
+ERROR:  new row for relation "payment_intents" violates check constraint "payment_intents_amount_check"
+DETAIL:  Failing row contains (5eb7d1a9-43c3-4bba-96d7-6b54b27a7134, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000b12, null, provx, null, 0.00, INR, null, CREATED, null, null, null, null, 2026-11-27 16:33:13.343439+00, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:13.343439+00, 2026-11-27 16:23:13.343439+00, 0).
+--- FAIL expected: negative amount
+ERROR:  new row for relation "payment_intents" violates check constraint "payment_intents_amount_check"
+DETAIL:  Failing row contains (27f43be7-6118-4507-a999-712f3e9d31ad, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000b12, null, provx, null, -5.00, INR, null, CREATED, null, null, null, null, 2026-11-27 16:33:13.343877+00, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:13.343877+00, 2026-11-27 16:23:13.343877+00, 0).
+--- FAIL expected: expiry not after creation
+ERROR:  new row for relation "payment_intents" violates check constraint "payment_intents_check"
+DETAIL:  Failing row contains (a7cbf22b-05d6-49ec-a78e-a2ca0da1f90c, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000b12, null, provx, null, 100.00, INR, null, CREATED, null, null, null, null, 2026-11-27 16:22:13.344152+00, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:13.344152+00, 2026-11-27 16:23:13.344152+00, 0).
+--- FAIL expected: invalid intent status
+ERROR:  new row for relation "payment_intents" violates check constraint "payment_intents_status_check"
+DETAIL:  Failing row contains (71ae8279-273b-4586-86af-1382e5af7786, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000b12, null, provx, null, 100.00, INR, null, PAID, null, null, null, null, 2026-11-27 16:33:13.344331+00, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:13.344331+00, 2026-11-27 16:23:13.344331+00, 0).
+--- FAIL expected: provider code format
+ERROR:  new row for relation "payment_intents" violates check constraint "payment_intents_provider_check"
+DETAIL:  Failing row contains (d87ff7cf-21c2-4816-b221-b464b53eda0b, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000b12, null, Prov X, null, 100.00, INR, null, CREATED, null, null, null, null, 2026-11-27 16:33:13.3445+00, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:13.3445+00, 2026-11-27 16:23:13.3445+00, 0).
+--- FAIL expected: bill does not exist
+ERROR:  insert or update on table "payment_intents" violates foreign key constraint "payment_intents_bill_id_fkey"
+DETAIL:  Key (bill_id)=(00000000-0000-0000-0000-00000000dead) is not present in table "bills".
+--- OK expected: CREATED -> PENDING
+UPDATE 1
+--- FAIL expected: SUCCESS without success_at
+ERROR:  new row for relation "payment_intents" violates check constraint "payment_intents_check1"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-00000000f001, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000b11, null, provx, R1, 100.00, INR, null, SUCCESS, null, null, null, 100.00, 2026-11-27 16:33:13.341667+00, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:13.341667+00, 2026-11-27 16:23:13.341667+00, 0).
+--- FAIL expected: SUCCESS with a received amount different from the locked amount
+ERROR:  new row for relation "payment_intents" violates check constraint "payment_intents_check1"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-00000000f001, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000b11, null, provx, R1, 100.00, INR, null, SUCCESS, null, null, null, 99.00, 2026-11-27 16:33:13.341667+00, 2026-11-27 16:23:13.346239+00, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:13.341667+00, 2026-11-27 16:23:13.341667+00, 0).
+--- FAIL expected: SUCCESS without a received amount
+ERROR:  new row for relation "payment_intents" violates check constraint "payment_intents_check1"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-00000000f001, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000b11, null, provx, R1, 100.00, INR, null, SUCCESS, null, null, null, null, 2026-11-27 16:33:13.341667+00, 2026-11-27 16:23:13.346591+00, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:13.341667+00, 2026-11-27 16:23:13.341667+00, 0).
+--- FAIL expected: received amount zero
+ERROR:  new row for relation "payment_intents" violates check constraint "payment_intents_received_amount_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-00000000f001, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000b11, null, provx, R1, 100.00, INR, null, PENDING, null, null, null, 0.00, 2026-11-27 16:33:13.341667+00, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:13.341667+00, 2026-11-27 16:23:13.341667+00, 0).
+--- FAIL expected: invalid attention value
+ERROR:  new row for relation "payment_intents" violates check constraint "payment_intents_attention_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-00000000f001, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000b11, null, provx, R1, 100.00, INR, null, PENDING, WEIRD, null, null, null, 2026-11-27 16:33:13.341667+00, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:13.341667+00, 2026-11-27 16:23:13.341667+00, 0).
+--- FAIL expected: attention resolved but never raised
+ERROR:  new row for relation "payment_intents" violates check constraint "payment_intents_check2"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-00000000f001, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000b11, null, provx, R1, 100.00, INR, null, PENDING, null, 2026-11-27 16:23:13.347099+00, 00000000-0000-0000-0000-0000000000f1, null, 2026-11-27 16:33:13.341667+00, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:13.341667+00, 2026-11-27 16:23:13.341667+00, 0).
+--- FAIL expected: attention resolved without saying who
+ERROR:  new row for relation "payment_intents" violates check constraint "payment_intents_check3"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-00000000f001, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000b11, null, provx, R1, 100.00, INR, null, PENDING, LATE_SUCCESS, 2026-11-27 16:23:13.347263+00, null, null, 2026-11-27 16:33:13.341667+00, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:13.341667+00, 2026-11-27 16:23:13.341667+00, 0).
+--- OK expected: attention raised, then resolved by a user
+UPDATE 1
+UPDATE 1
+--- OK expected: PENDING -> SUCCESS with the exact locked amount
+UPDATE 1
+--- OK expected: provider reference unique per provider; an expired intent on bill 2
+INSERT 0 1
+--- OK expected: after EXPIRED a new live intent for the same bill is allowed
+INSERT 0 1
+--- FAIL expected: provider reference reused by the same provider
+ERROR:  duplicate key value violates unique constraint "ux_intent_provider_ref"
+DETAIL:  Key (provider, provider_ref)=(provx, R2) already exists.
+--- OK expected: same reference text under another provider; several intents without a reference
+INSERT 0 1
+INSERT 0 1
+--- OK expected: provider event for intent 1
+INSERT 0 1
+--- FAIL expected: the same provider event id again (unique provider+event_id)
+ERROR:  duplicate key value violates unique constraint "payment_webhook_events_provider_event_id_key"
+DETAIL:  Key (provider, event_id)=(provx, evt1) already exists.
+--- OK expected: same event id from another provider
+INSERT 0 1
+--- FAIL expected: invalid event kind
+ERROR:  new row for relation "payment_webhook_events" violates check constraint "payment_webhook_events_event_kind_check"
+DETAIL:  Failing row contains (e035b244-b577-423b-95d1-ef0770572968, provx, evt2, {}, 2026-11-27 16:23:13.357093+00, null, null, null, REFUND, null, null, null).
+--- FAIL expected: negative event amount
+ERROR:  new row for relation "payment_webhook_events" violates check constraint "payment_webhook_events_amount_check"
+DETAIL:  Failing row contains (20482e41-271d-4058-94a3-96305dbcf0a7, provx, evt3, {}, 2026-11-27 16:23:13.357293+00, null, null, null, OTHER, -1.00, null, null).
+--- FAIL expected: invalid outcome label
+ERROR:  new row for relation "payment_webhook_events" violates check constraint "payment_webhook_events_outcome_check"
+DETAIL:  Failing row contains (3b094ca7-5ab1-483f-97b9-fdf57e2ad1c2, provx, evt4, {}, 2026-11-27 16:23:13.357443+00, null, null, null, OTHER, null, null, MAYBE).
+--- FAIL expected: event for an intent that does not exist
+ERROR:  insert or update on table "payment_webhook_events" violates foreign key constraint "payment_webhook_events_intent_id_fkey"
+DETAIL:  Key (intent_id)=(00000000-0000-0000-0000-00000000dead) is not present in table "payment_intents".
+--- OK expected: processing result may be written (processed_at, outcome)
+UPDATE 1
+--- FAIL expected: the stored payload cannot be edited
+ERROR:  payment_webhook_events: only processed_at, outcome, intent_id and tenant_id may change
+CONTEXT:  PL/pgSQL function galla_webhook_event_guard() line 11 at RAISE
+--- FAIL expected: the stored amount cannot be edited
+ERROR:  payment_webhook_events: only processed_at, outcome, intent_id and tenant_id may change
+CONTEXT:  PL/pgSQL function galla_webhook_event_guard() line 11 at RAISE
+--- FAIL expected: the provider event id cannot be edited
+ERROR:  payment_webhook_events: only processed_at, outcome, intent_id and tenant_id may change
+CONTEXT:  PL/pgSQL function galla_webhook_event_guard() line 11 at RAISE
+--- FAIL expected: DELETE without the retention job flag
+ERROR:  DELETE on payment_webhook_events is only allowed for the retention job
+CONTEXT:  PL/pgSQL function galla_webhook_event_guard() line 5 at RAISE
+--- FAIL expected: DELETE with the retention flag but the event is younger than one day
+SET
+ERROR:  DELETE on payment_webhook_events is only allowed for the retention job
+CONTEXT:  PL/pgSQL function galla_webhook_event_guard() line 5 at RAISE
+RESET
+--- OK expected: retention job deletes an old event
+INSERT 0 1
+SET
+DELETE 1
+RESET
+--- OK expected: settlement report gross 100 fee 2 net 98
+INSERT 0 1
+--- FAIL expected: the same settlement imported twice
+ERROR:  duplicate key value violates unique constraint "provider_settlements_tenant_id_provider_settlement_ref_key"
+DETAIL:  Key (tenant_id, provider, settlement_ref)=(00000000-0000-0000-0000-000000000001, provx, SET-1) already exists.
+--- FAIL expected: net is not gross minus fee
+ERROR:  new row for relation "provider_settlements" violates check constraint "provider_settlements_check"
+DETAIL:  Failing row contains (68bcfed7-b304-4382-9911-cb11f02d3190, 00000000-0000-0000-0000-000000000001, null, provx, SET-2, 2026-11-10, 100.00, 2.00, 99.00, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:13.361792+00).
+--- FAIL expected: negative gross
+ERROR:  new row for relation "provider_settlements" violates check constraint "provider_settlements_gross_amount_check"
+DETAIL:  Failing row contains (2bf4c0a2-9ef2-4d29-aebb-f06a56f9a022, 00000000-0000-0000-0000-000000000001, null, provx, SET-3, 2026-11-10, -1.00, 0.00, -1.00, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:13.361951+00).
+--- OK expected: matched line
+INSERT 0 1
+--- FAIL expected: same transaction twice in one report
+ERROR:  duplicate key value violates unique constraint "provider_settlement_lines_settlement_id_provider_txn_id_key"
+DETAIL:  Key (settlement_id, provider_txn_id)=(00000000-0000-0000-0000-00000000a501, TX1) already exists.
+--- FAIL expected: MATCHED line without an intent
+ERROR:  new row for relation "provider_settlement_lines" violates check constraint "provider_settlement_lines_check"
+DETAIL:  Failing row contains (3a40cf4d-235d-4ac4-9160-a3a32835cf0e, 00000000-0000-0000-0000-00000000a501, TX2, 100.00, null, MATCHED, null).
+--- OK expected: unmatched line and amount-difference line
+INSERT 0 1
+INSERT 0 1
+--- FAIL expected: invalid match status
+ERROR:  new row for relation "provider_settlement_lines" violates check constraint "provider_settlement_lines_match_status_check"
+DETAIL:  Failing row contains (0198a9e4-398b-4a46-9f84-3beae5dc1ee8, 00000000-0000-0000-0000-00000000a501, TX5, 1.00, null, GUESSED, null).
+--- FAIL expected: line for an unknown settlement
+ERROR:  insert or update on table "provider_settlement_lines" violates foreign key constraint "provider_settlement_lines_settlement_id_fkey"
+DETAIL:  Key (settlement_id)=(00000000-0000-0000-0000-00000000dead) is not present in table "provider_settlements".
+--- OK expected: legal fields (GSTIN, matching state code and PAN, FSSAI 14 digits)
+UPDATE 1
+--- FAIL expected: GSTIN in lower case
+ERROR:  new row for relation "outlets" violates check constraint "outlets_gstin_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000001, O1, Out, null, null, null, null, null, IN, null, null, Asia/Kolkata, INR, Rs, null, null, null, null, null, null, null, f, 0.00, null, NEAREST_1, 4, 4, f, null, {}, ACTIVE, 2026-11-27 16:23:13.304298+00, 2026-11-27 16:23:13.304298+00, 0, 0.00, null, null, NONE, 0.00, null, null, 1.00, null, t, 90, t, 72, NONE, 0.00, {TAKEAWAY,DELIVERY}, null, ZERO_TAX, f, 500.00, t, f, f, null, 27abcde1234f1z5, null, null, UNREGISTERED, null, BILL, OUTLET_STATE, f, en).
+--- FAIL expected: GSTIN too short (14 characters)
+ERROR:  new row for relation "outlets" violates check constraint "outlets_gstin_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000001, O1, Out, null, null, null, null, null, IN, null, null, Asia/Kolkata, INR, Rs, null, null, null, null, null, null, null, f, 0.00, null, NEAREST_1, 4, 4, f, null, {}, ACTIVE, 2026-11-27 16:23:13.304298+00, 2026-11-27 16:23:13.304298+00, 0, 0.00, null, null, NONE, 0.00, null, null, 1.00, null, t, 90, t, 72, NONE, 0.00, {TAKEAWAY,DELIVERY}, null, ZERO_TAX, f, 500.00, t, f, f, null, 27ABCDE1234F1Z, null, null, UNREGISTERED, null, BILL, OUTLET_STATE, f, en).
+--- FAIL expected: GSTIN whose 14th character is not Z
+ERROR:  new row for relation "outlets" violates check constraint "outlets_gstin_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000001, O1, Out, null, null, null, null, null, IN, null, null, Asia/Kolkata, INR, Rs, null, null, null, null, null, null, null, f, 0.00, null, NEAREST_1, 4, 4, f, null, {}, ACTIVE, 2026-11-27 16:23:13.304298+00, 2026-11-27 16:23:13.304298+00, 0, 0.00, null, null, NONE, 0.00, null, null, 1.00, null, t, 90, t, 72, NONE, 0.00, {TAKEAWAY,DELIVERY}, null, ZERO_TAX, f, 500.00, t, f, f, null, 27ABCDE1234F1X5, null, null, UNREGISTERED, null, BILL, OUTLET_STATE, f, en).
+--- FAIL expected: GSTIN with letters where the state digits belong
+ERROR:  new row for relation "outlets" violates check constraint "outlets_gstin_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000001, O1, Out, null, null, null, null, null, IN, null, null, Asia/Kolkata, INR, Rs, null, null, null, null, null, null, null, f, 0.00, null, NEAREST_1, 4, 4, f, null, {}, ACTIVE, 2026-11-27 16:23:13.304298+00, 2026-11-27 16:23:13.304298+00, 0, 0.00, null, null, NONE, 0.00, null, null, 1.00, null, t, 90, t, 72, NONE, 0.00, {TAKEAWAY,DELIVERY}, null, ZERO_TAX, f, 500.00, t, f, f, null, AAABCDE1234F1Z5, null, null, UNREGISTERED, null, BILL, OUTLET_STATE, f, en).
+--- FAIL expected: state code with letters
+ERROR:  new row for relation "outlets" violates check constraint "outlets_state_code_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000001, O1, Out, null, null, null, null, null, IN, null, null, Asia/Kolkata, INR, Rs, null, null, null, null, null, null, null, f, 0.00, null, NEAREST_1, 4, 4, f, null, {}, ACTIVE, 2026-11-27 16:23:13.304298+00, 2026-11-27 16:23:13.304298+00, 0, 0.00, null, null, NONE, 0.00, null, null, 1.00, null, t, 90, t, 72, NONE, 0.00, {TAKEAWAY,DELIVERY}, null, ZERO_TAX, f, 500.00, t, f, f, null, null, MH, null, UNREGISTERED, null, BILL, OUTLET_STATE, f, en).
+--- FAIL expected: state code does not match the first two GSTIN digits
+ERROR:  new row for relation "outlets" violates check constraint "outlets_gstin_state_matches"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000a2, 00000000-0000-0000-0000-000000000001, O2, Out2, null, null, null, null, null, IN, null, null, Asia/Kolkata, INR, Rs, null, null, null, null, null, null, null, f, 0.00, null, NEAREST_1, 4, 4, f, null, {}, ACTIVE, 2026-11-27 16:23:13.304298+00, 2026-11-27 16:23:13.304298+00, 0, 0.00, null, null, NONE, 0.00, null, null, 1.00, null, t, 90, t, 72, NONE, 0.00, {TAKEAWAY,DELIVERY}, null, ZERO_TAX, f, 500.00, t, f, f, Cafe Z Pvt, 27ABCDE1234F1Z5, 29, ABCDE1234F, REGULAR, 12345678901234, TAX_INVOICE, OUTLET_STATE, t, en).
+--- FAIL expected: PAN does not match GSTIN characters 3-12
+ERROR:  new row for relation "outlets" violates check constraint "outlets_gstin_pan_matches"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000a2, 00000000-0000-0000-0000-000000000001, O2, Out2, null, null, null, null, null, IN, null, null, Asia/Kolkata, INR, Rs, null, null, null, null, null, null, null, f, 0.00, null, NEAREST_1, 4, 4, f, null, {}, ACTIVE, 2026-11-27 16:23:13.304298+00, 2026-11-27 16:23:13.304298+00, 0, 0.00, null, null, NONE, 0.00, null, null, 1.00, null, t, 90, t, 72, NONE, 0.00, {TAKEAWAY,DELIVERY}, null, ZERO_TAX, f, 500.00, t, f, f, Cafe Z Pvt, 27ABCDE1234F1Z5, 27, ABCDE1234G, REGULAR, 12345678901234, TAX_INVOICE, OUTLET_STATE, t, en).
+--- FAIL expected: PAN in a wrong format
+ERROR:  new row for relation "outlets" violates check constraint "outlets_pan_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000001, O1, Out, null, null, null, null, null, IN, null, null, Asia/Kolkata, INR, Rs, null, null, null, null, null, null, null, f, 0.00, null, NEAREST_1, 4, 4, f, null, {}, ACTIVE, 2026-11-27 16:23:13.304298+00, 2026-11-27 16:23:13.304298+00, 0, 0.00, null, null, NONE, 0.00, null, null, 1.00, null, t, 90, t, 72, NONE, 0.00, {TAKEAWAY,DELIVERY}, null, ZERO_TAX, f, 500.00, t, f, f, null, null, null, 12345ABCDE, UNREGISTERED, null, BILL, OUTLET_STATE, f, en).
+--- FAIL expected: FSSAI licence with 13 digits
+ERROR:  new row for relation "outlets" violates check constraint "outlets_fssai_licence_no_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000001, O1, Out, null, null, null, null, null, IN, null, null, Asia/Kolkata, INR, Rs, null, null, null, null, null, null, null, f, 0.00, null, NEAREST_1, 4, 4, f, null, {}, ACTIVE, 2026-11-27 16:23:13.304298+00, 2026-11-27 16:23:13.304298+00, 0, 0.00, null, null, NONE, 0.00, null, null, 1.00, null, t, 90, t, 72, NONE, 0.00, {TAKEAWAY,DELIVERY}, null, ZERO_TAX, f, 500.00, t, f, f, null, null, null, null, UNREGISTERED, 1234567890123, BILL, OUTLET_STATE, f, en).
+--- FAIL expected: FSSAI licence with a letter
+ERROR:  new row for relation "outlets" violates check constraint "outlets_fssai_licence_no_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000001, O1, Out, null, null, null, null, null, IN, null, null, Asia/Kolkata, INR, Rs, null, null, null, null, null, null, null, f, 0.00, null, NEAREST_1, 4, 4, f, null, {}, ACTIVE, 2026-11-27 16:23:13.304298+00, 2026-11-27 16:23:13.304298+00, 0, 0.00, null, null, NONE, 0.00, null, null, 1.00, null, t, 90, t, 72, NONE, 0.00, {TAKEAWAY,DELIVERY}, null, ZERO_TAX, f, 500.00, t, f, f, null, null, null, null, UNREGISTERED, 1234567890123A, BILL, OUTLET_STATE, f, en).
+--- FAIL expected: FSSAI licence with spaces
+ERROR:  new row for relation "outlets" violates check constraint "outlets_fssai_licence_no_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000001, O1, Out, null, null, null, null, null, IN, null, null, Asia/Kolkata, INR, Rs, null, null, null, null, null, null, null, f, 0.00, null, NEAREST_1, 4, 4, f, null, {}, ACTIVE, 2026-11-27 16:23:13.304298+00, 2026-11-27 16:23:13.304298+00, 0, 0.00, null, null, NONE, 0.00, null, null, 1.00, null, t, 90, t, 72, NONE, 0.00, {TAKEAWAY,DELIVERY}, null, ZERO_TAX, f, 500.00, t, f, f, null, null, null, null, UNREGISTERED, 1234 5678 9012 34, BILL, OUTLET_STATE, f, en).
+--- OK expected: GSTIN alone (no state code, no PAN) is accepted
+UPDATE 1
+--- FAIL expected: invalid registration type
+ERROR:  new row for relation "outlets" violates check constraint "outlets_registration_type_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000001, O1, Out, null, null, null, null, null, IN, null, null, Asia/Kolkata, INR, Rs, null, null, null, null, null, null, null, f, 0.00, null, NEAREST_1, 4, 4, f, null, {}, ACTIVE, 2026-11-27 16:23:13.304298+00, 2026-11-27 16:23:13.304298+00, 0, 0.00, null, null, NONE, 0.00, null, null, 1.00, null, t, 90, t, 72, NONE, 0.00, {TAKEAWAY,DELIVERY}, null, ZERO_TAX, f, 500.00, t, f, f, null, 29ABCDE1234F1Z5, null, null, GST_REGISTERED, null, BILL, OUTLET_STATE, f, en).
+--- FAIL expected: invalid document title
+ERROR:  new row for relation "outlets" violates check constraint "outlets_document_title_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000001, O1, Out, null, null, null, null, null, IN, null, null, Asia/Kolkata, INR, Rs, null, null, null, null, null, null, null, f, 0.00, null, NEAREST_1, 4, 4, f, null, {}, ACTIVE, 2026-11-27 16:23:13.304298+00, 2026-11-27 16:23:13.304298+00, 0, 0.00, null, null, NONE, 0.00, null, null, 1.00, null, t, 90, t, 72, NONE, 0.00, {TAKEAWAY,DELIVERY}, null, ZERO_TAX, f, 500.00, t, f, f, null, 29ABCDE1234F1Z5, null, null, UNREGISTERED, null, RECEIPT, OUTLET_STATE, f, en).
+--- FAIL expected: invalid place-of-supply mode
+ERROR:  new row for relation "outlets" violates check constraint "outlets_place_of_supply_mode_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000001, O1, Out, null, null, null, null, null, IN, null, null, Asia/Kolkata, INR, Rs, null, null, null, null, null, null, null, f, 0.00, null, NEAREST_1, 4, 4, f, null, {}, ACTIVE, 2026-11-27 16:23:13.304298+00, 2026-11-27 16:23:13.304298+00, 0, 0.00, null, null, NONE, 0.00, null, null, 1.00, null, t, 90, t, 72, NONE, 0.00, {TAKEAWAY,DELIVERY}, null, ZERO_TAX, f, 500.00, t, f, f, null, 29ABCDE1234F1Z5, null, null, UNREGISTERED, null, BILL, CUSTOMER_STATE, f, en).
+--- FAIL expected: bill language in upper case
+ERROR:  new row for relation "outlets" violates check constraint "outlets_bill_language_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000001, O1, Out, null, null, null, null, null, IN, null, null, Asia/Kolkata, INR, Rs, null, null, null, null, null, null, null, f, 0.00, null, NEAREST_1, 4, 4, f, null, {}, ACTIVE, 2026-11-27 16:23:13.304298+00, 2026-11-27 16:23:13.304298+00, 0, 0.00, null, null, NONE, 0.00, null, null, 1.00, null, t, 90, t, 72, NONE, 0.00, {TAKEAWAY,DELIVERY}, null, ZERO_TAX, f, 500.00, t, f, f, null, 29ABCDE1234F1Z5, null, null, UNREGISTERED, null, BILL, OUTLET_STATE, f, EN).
+--- FAIL expected: bill language as a word
+ERROR:  new row for relation "outlets" violates check constraint "outlets_bill_language_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000001, O1, Out, null, null, null, null, null, IN, null, null, Asia/Kolkata, INR, Rs, null, null, null, null, null, null, null, f, 0.00, null, NEAREST_1, 4, 4, f, null, {}, ACTIVE, 2026-11-27 16:23:13.304298+00, 2026-11-27 16:23:13.304298+00, 0, 0.00, null, null, NONE, 0.00, null, null, 1.00, null, t, 90, t, 72, NONE, 0.00, {TAKEAWAY,DELIVERY}, null, ZERO_TAX, f, 500.00, t, f, f, null, 29ABCDE1234F1Z5, null, null, UNREGISTERED, null, BILL, OUTLET_STATE, f, english).
+--- OK expected: bill language hi and pt-BR
+UPDATE 1
+UPDATE 1
+--- FAIL expected: HSN with letters
+ERROR:  new row for relation "menu_items" violates check constraint "menu_items_hsn_format"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000c1, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-0000000000b0, Paneer, null, null, 100.00, null, NA, null, AB12, t, t, 0, 2026-11-27 16:23:13.313325+00, 2026-11-27 16:23:13.313325+00, 0, null, 0.00, STANDARD, null, {}).
+--- FAIL expected: HSN with one digit
+ERROR:  new row for relation "menu_items" violates check constraint "menu_items_hsn_format"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000c1, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-0000000000b0, Paneer, null, null, 100.00, null, NA, null, 9, t, t, 0, 2026-11-27 16:23:13.313325+00, 2026-11-27 16:23:13.313325+00, 0, null, 0.00, STANDARD, null, {}).
+--- FAIL expected: HSN with nine digits
+ERROR:  new row for relation "menu_items" violates check constraint "menu_items_hsn_format"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000c1, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-0000000000b0, Paneer, null, null, 100.00, null, NA, null, 123456789, t, t, 0, 2026-11-27 16:23:13.313325+00, 2026-11-27 16:23:13.313325+00, 0, null, 0.00, STANDARD, null, {}).
+--- OK expected: HSN/SAC of 4 and 8 digits
+UPDATE 1
+UPDATE 1
+--- FAIL expected: customer GSTIN in a wrong format
+ERROR:  new row for relation "customers" violates check constraint "customers_gstin_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000cc, 00000000-0000-0000-0000-000000000001, Cust, +919876500000, null, null, 2026-11-27 16:23:13.316133+00, 2026-11-27 16:23:13.316133+00, 0.00, null, 27ABCDE1234F1).
+--- OK expected: customer legal name and GSTIN
+UPDATE 1
+--- FAIL expected: bill buyer GSTIN in a wrong format
+ERROR:  new row for relation "bills" violates check constraint "bills_buyer_gstin_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-000000000b11, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-0000000000e1, B, 2026-27, 1, GL-1, GENERATED, f, INR, 100.00, null, null, 0.00, null, 0.00, 0.00, 100.00, 0.00, 100.00, 0.00, null, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:13.310977+00, null, null, null, null, 0, 0.00, null, f, null, null, f, null, 0.00, 0.00, null, null, null, null, null, null, null, null, null, null, nope, null).
+--- FAIL expected: bill place-of-supply code with letters
+ERROR:  new row for relation "bills" violates check constraint "bills_place_of_supply_state_code_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-000000000b11, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-0000000000e1, B, 2026-27, 1, GL-1, GENERATED, f, INR, 100.00, null, null, 0.00, null, 0.00, 0.00, 100.00, 0.00, 100.00, 0.00, null, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:13.310977+00, null, null, null, null, 0, 0.00, null, f, null, null, f, null, 0.00, 0.00, null, null, null, null, null, null, null, null, MH, null, null, null).
+--- OK expected: document snapshot on the bill
+UPDATE 1
+--- OK expected: tax-profile pair (intra -> inter)
+INSERT 0 1
+--- FAIL expected: the same intra profile paired twice
+ERROR:  duplicate key value violates unique constraint "tax_profile_pairs_intra_profile_id_key"
+DETAIL:  Key (intra_profile_id)=(00000000-0000-0000-0000-0000000000a9) already exists.
+--- FAIL expected: a profile paired with itself
+ERROR:  new row for relation "tax_profile_pairs" violates check constraint "tax_profile_pairs_check"
+DETAIL:  Failing row contains (afb8a27e-9647-4fc3-8864-1d1299beb965, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000aa, 00000000-0000-0000-0000-0000000000aa, 2026-11-27 16:23:13.378681+00).
+--- OK expected: ledger mapping
+INSERT 0 1
+--- FAIL expected: same purpose twice for an outlet
+ERROR:  duplicate key value violates unique constraint "tally_ledger_mappings_outlet_id_purpose_key"
+DETAIL:  Key (outlet_id, purpose)=(00000000-0000-0000-0000-0000000000a1, SALES) already exists.
+--- FAIL expected: unknown purpose
+ERROR:  new row for relation "tally_ledger_mappings" violates check constraint "tally_ledger_mappings_purpose_check"
+DETAIL:  Failing row contains (da4919ca-a89f-405e-9bf7-1fb9af7b2550, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, DISCOUNT, D).
+--- FAIL expected: blank ledger name
+ERROR:  new row for relation "tally_ledger_mappings" violates check constraint "tally_ledger_mappings_tally_ledger_name_check"
+DETAIL:  Failing row contains (522bdca3-755e-4f75-ae99-531ad9f0a690, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, CASH,    ).
+--- OK expected: tax ledger mapping
+INSERT 0 1
+--- FAIL expected: same tax component twice for an outlet
+ERROR:  duplicate key value violates unique constraint "tally_tax_ledger_mappings_outlet_id_component_name_key"
+DETAIL:  Key (outlet_id, component_name)=(00000000-0000-0000-0000-0000000000a1, CGST) already exists.
+--- OK expected: queued register export
+INSERT 0 1
+--- FAIL expected: DONE without file details
+ERROR:  new row for relation "export_jobs" violates check constraint "export_jobs_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-00000000e501, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, SALES_REGISTER, CSV, {}, DONE, null, null, null, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:13.381013+00, null, null).
+--- FAIL expected: file checksum that is not 64 hex characters
+ERROR:  new row for relation "export_jobs" violates check constraint "export_jobs_file_sha256_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-00000000e501, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, SALES_REGISTER, CSV, {}, QUEUED, null, abc, null, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:13.381013+00, null, null).
+--- OK expected: DONE with file, checksum, row count and finish time
+UPDATE 1
+--- FAIL expected: negative row count
+ERROR:  new row for relation "export_jobs" violates check constraint "export_jobs_row_count_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-00000000e501, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, SALES_REGISTER, CSV, {}, DONE, exports/1.csv, aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, -1, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:13.381013+00, 2026-11-27 16:23:13.382361+00, null).
+--- FAIL expected: Tally vouchers in CSV format
+ERROR:  new row for relation "export_jobs" violates check constraint "export_jobs_check1"
+DETAIL:  Failing row contains (b6ed05df-bc68-4f2a-8a94-16d6e4f3671a, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, TALLY_VOUCHERS, CSV, {}, QUEUED, null, null, null, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:13.383038+00, null, null).
+--- OK expected: Tally vouchers as XML
+INSERT 0 1
+--- FAIL expected: tenant data export as CSV
+ERROR:  new row for relation "export_jobs" violates check constraint "export_jobs_check2"
+DETAIL:  Failing row contains (4c619473-2bb4-4ee5-9469-20bea592c924, 00000000-0000-0000-0000-000000000001, null, TENANT_DATA_EXPORT, CSV, {}, QUEUED, null, null, null, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:13.383686+00, null, null).
+--- OK expected: tenant data export as ZIP
+INSERT 0 1
+--- FAIL expected: unknown export kind
+ERROR:  new row for relation "export_jobs" violates check constraint "export_jobs_kind_check"
+DETAIL:  Failing row contains (caafc88c-70d1-43d5-b9e1-c3c7f3ee1452, 00000000-0000-0000-0000-000000000001, null, EVERYTHING, CSV, {}, QUEUED, null, null, null, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:13.384401+00, null, null).
+--- FAIL expected: unknown export status
+ERROR:  new row for relation "export_jobs" violates check constraint "export_jobs_status_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-00000000e501, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, SALES_REGISTER, CSV, {}, PAUSED, exports/1.csv, aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, 12, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:13.381013+00, 2026-11-27 16:23:13.382361+00, null).
+--- FAIL expected: user UI language as a word
+ERROR:  new row for relation "users" violates check constraint "users_ui_language_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000f1, 00000000-0000-0000-0000-000000000001, d@x.io, x, D, null, OWNER, null, ACTIVE, 0, null, null, 2026-11-27 16:23:13.307909+00, 2026-11-27 16:23:13.307909+00, 0, f, Hindi).
+--- OK expected: user UI language hi
+UPDATE 1
+--- OK expected: item translation
+INSERT 0 1
+--- FAIL expected: same item and language twice
+ERROR:  duplicate key value violates unique constraint "menu_item_translations_menu_item_id_language_key"
+DETAIL:  Key (menu_item_id, language)=(00000000-0000-0000-0000-0000000000c1, hi) already exists.
+--- FAIL expected: translation into en (English is the item name)
+ERROR:  new row for relation "menu_item_translations" violates check constraint "menu_item_translations_language_check"
+DETAIL:  Failing row contains (ee9b7db8-8bab-4f28-8108-7ee6486af1fc, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000c1, en, Paneer).
+--- FAIL expected: blank translated name
+ERROR:  new row for relation "menu_item_translations" violates check constraint "menu_item_translations_name_check"
+DETAIL:  Failing row contains (9fd76402-76a2-4dbc-ae23-e4deeb48478b, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000c1, mr,   ).
+--- OK expected: tenant data settings with defaults
+INSERT 0 1
+--- FAIL expected: audit retention below 365 days
+ERROR:  new row for relation "tenant_data_settings" violates check constraint "tenant_data_settings_audit_log_retention_days_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-000000000001, 100, 30, 90, 7, 90, 365, 2026-11-27 16:23:13.38788+00).
+--- FAIL expected: webhook payload retention below 7 days
+ERROR:  new row for relation "tenant_data_settings" violates check constraint "tenant_data_settings_webhook_payload_retention_days_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-000000000001, 730, 3, 90, 7, 90, 365, 2026-11-27 16:23:13.38788+00).
+--- FAIL expected: export file retention of 0 days
+ERROR:  new row for relation "tenant_data_settings" violates check constraint "tenant_data_settings_export_file_retention_days_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-000000000001, 730, 30, 90, 0, 90, 365, 2026-11-27 16:23:13.38788+00).
+--- FAIL expected: deletion before the export window ends
+ERROR:  new row for relation "tenant_data_settings" violates check constraint "tenant_data_settings_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-000000000001, 730, 30, 90, 7, 90, 10, 2026-11-27 16:23:13.38788+00).
+--- OK expected: both windows changed together
+UPDATE 1
+--- FAIL expected: a second settings row for the same tenant
+ERROR:  duplicate key value violates unique constraint "tenant_data_settings_pkey"
+DETAIL:  Key (tenant_id)=(00000000-0000-0000-0000-000000000001) already exists.
+--- OK expected: erasure request by customer id
+INSERT 0 1
+--- OK expected: access request by phone only
+INSERT 0 1
+--- FAIL expected: request with neither customer nor phone
+ERROR:  new row for relation "data_subject_requests" violates check constraint "data_subject_requests_check"
+DETAIL:  Failing row contains (5bf36185-aca0-4a6a-8c38-130247a19324, 00000000-0000-0000-0000-000000000001, null, null, ERASURE, RECEIVED, 2026-11-27 16:23:13.391446+00, 2026-12-27 16:23:13.391446+00, null, null, null, null).
+--- FAIL expected: phone without + country code
+ERROR:  new row for relation "data_subject_requests" violates check constraint "data_subject_requests_phone_e164_check"
+DETAIL:  Failing row contains (fe27ca69-4d96-4f07-bcba-8e22bbe8e3d5, 00000000-0000-0000-0000-000000000001, null, 9876543210, ERASURE, RECEIVED, 2026-11-27 16:23:13.391744+00, 2026-12-27 16:23:13.391744+00, null, null, null, null).
+--- FAIL expected: due date not after receipt
+ERROR:  new row for relation "data_subject_requests" violates check constraint "data_subject_requests_check1"
+DETAIL:  Failing row contains (48502ed9-aaee-4539-bfdf-ccbd721ebe76, 00000000-0000-0000-0000-000000000001, null, +919876543210, ERASURE, RECEIVED, 2026-11-27 16:23:13.391954+00, 2026-11-26 16:23:13.391954+00, null, null, null, null).
+--- FAIL expected: unknown request type
+ERROR:  new row for relation "data_subject_requests" violates check constraint "data_subject_requests_request_type_check"
+DETAIL:  Failing row contains (4f1ba60d-32dd-464a-8422-0be8879c8a85, 00000000-0000-0000-0000-000000000001, null, +919876543210, SELL, RECEIVED, 2026-11-27 16:23:13.392143+00, 2026-12-27 16:23:13.392143+00, null, null, null, null).
+--- FAIL expected: COMPLETED without handler and completion time
+ERROR:  new row for relation "data_subject_requests" violates check constraint "data_subject_requests_check2"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-00000000d501, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000cc, null, ERASURE, COMPLETED, 2026-11-27 16:23:13.389988+00, 2026-12-27 16:23:13.389988+00, null, null, null, null).
+--- FAIL expected: REJECTED without an outcome note
+ERROR:  new row for relation "data_subject_requests" violates check constraint "data_subject_requests_check3"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-00000000d501, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000cc, null, ERASURE, REJECTED, 2026-11-27 16:23:13.389988+00, 2026-12-27 16:23:13.389988+00, 2026-11-27 16:23:13.392474+00, 00000000-0000-0000-0000-0000000000f1, null, null).
+--- OK expected: REJECTED with note, handler and time
+UPDATE 1
+--- FAIL expected: hard delete of a customer that has a request (erasure anonymises instead)
+ERROR:  update or delete on table "customers" violates foreign key constraint "data_subject_requests_customer_id_fkey" on table "data_subject_requests"
+DETAIL:  Key (id)=(00000000-0000-0000-0000-0000000000cc) is still referenced from table "data_subject_requests".
+--- OK expected: weekly summary schedule
+INSERT 0 1
+--- FAIL expected: second weekly schedule for the same outlet
+ERROR:  duplicate key value violates unique constraint "scheduled_reports_outlet_id_kind_key"
+DETAIL:  Key (outlet_id, kind)=(00000000-0000-0000-0000-0000000000a1, WEEKLY_SUMMARY) already exists.
+--- FAIL expected: weekly schedule without a weekday
+ERROR:  new row for relation "scheduled_reports" violates check constraint "scheduled_reports_check"
+DETAIL:  Failing row contains (fabd2da7-f9a7-4e46-931d-818276352a60, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a2, WEEKLY_SUMMARY, null, null, 08:00:00, {owner@x.io}, t, null, 2026-11-27 16:23:13.396658+00).
+--- FAIL expected: monthly schedule without a day of month
+ERROR:  new row for relation "scheduled_reports" violates check constraint "scheduled_reports_check1"
+DETAIL:  Failing row contains (74dcf6e3-836b-49d9-a6cf-58a52633b4c5, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a2, MONTHLY_SUMMARY, null, null, 08:00:00, {owner@x.io}, t, null, 2026-11-27 16:23:13.396857+00).
+--- FAIL expected: monthly day 29
+ERROR:  new row for relation "scheduled_reports" violates check constraint "scheduled_reports_day_of_month_check"
+DETAIL:  Failing row contains (4c9c1034-4547-41d5-874a-0a8ecfbe69f1, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a2, MONTHLY_SUMMARY, null, 29, 08:00:00, {owner@x.io}, t, null, 2026-11-27 16:23:13.396969+00).
+--- FAIL expected: weekday 8
+ERROR:  new row for relation "scheduled_reports" violates check constraint "scheduled_reports_weekday_check"
+DETAIL:  Failing row contains (ceb81dbc-7a5c-4662-a459-b47344f7e71f, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a2, WEEKLY_SUMMARY, 8, null, 08:00:00, {owner@x.io}, t, null, 2026-11-27 16:23:13.397079+00).
+--- FAIL expected: no recipients
+ERROR:  new row for relation "scheduled_reports" violates check constraint "scheduled_reports_recipients_check"
+DETAIL:  Failing row contains (512c27dd-a478-4a7b-b813-9ec6c3bcd868, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a2, WEEKLY_SUMMARY, 1, null, 08:00:00, {}, t, null, 2026-11-27 16:23:13.39719+00).
+--- FAIL expected: eleven recipients
+ERROR:  new row for relation "scheduled_reports" violates check constraint "scheduled_reports_recipients_check"
+DETAIL:  Failing row contains (990b4e85-ea8d-4809-bd74-895a6eb55641, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a2, WEEKLY_SUMMARY, 1, null, 08:00:00, {a@x.io,b@x.io,c@x.io,d@x.io,e@x.io,f@x.io,g@x.io,h@x.io,i@x.io,..., t, null, 2026-11-27 16:23:13.397327+00).
+--- OK expected: backup run and a tested restore
+INSERT 0 1
+INSERT 0 1
+--- FAIL expected: finished backup run without finish time
+ERROR:  new row for relation "backup_runs" violates check constraint "backup_runs_check"
+DETAIL:  Failing row contains (77699cec-e606-44d6-8080-3c47695ba447, FULL, OK, 2026-11-27 16:23:13.39849+00, null, null, null, null).
+--- FAIL expected: finish time before start
+ERROR:  new row for relation "backup_runs" violates check constraint "backup_runs_check1"
+DETAIL:  Failing row contains (b286a07d-d32b-449d-bc2c-cb4f8e9a05a6, FULL, OK, 2026-11-27 16:23:13.398763+00, 2026-11-27 15:23:13.398763+00, null, null, null).
+--- FAIL expected: unknown backup kind
+ERROR:  new row for relation "backup_runs" violates check constraint "backup_runs_kind_check"
+DETAIL:  Failing row contains (7320a898-a12a-48ed-bd2c-69835d101007, SNAPSHOT, RUNNING, 2026-11-27 16:23:13.399087+00, null, null, null, null).
+--- FAIL expected: negative backup size
+ERROR:  new row for relation "backup_runs" violates check constraint "backup_runs_size_bytes_check"
+DETAIL:  Failing row contains (e9aec0c3-29e7-4bb1-861e-63ba85bf0802, FULL, OK, 2026-11-27 16:23:13.399211+00, 2026-11-27 16:23:13.399211+00, -1, null, null).
+--- OK expected: audit row written
+INSERT 0 1
+--- FAIL expected: audit row cannot be changed
+ERROR:  audit_logs rows cannot be changed
+CONTEXT:  PL/pgSQL function galla_audit_guard() line 3 at RAISE
+--- FAIL expected: audit row cannot be deleted by the application
+ERROR:  audit_logs rows can only be deleted by the retention job
+CONTEXT:  PL/pgSQL function galla_audit_guard() line 5 at RAISE
+--- OK expected: the retention job (flag on) may delete audit rows
+SET
+DELETE 1
+RESET
+--- FAIL expected: the flag does not allow changing audit rows
+INSERT 0 1
+SET
+ERROR:  audit_logs rows cannot be changed
+CONTEXT:  PL/pgSQL function galla_audit_guard() line 3 at RAISE
+RESET

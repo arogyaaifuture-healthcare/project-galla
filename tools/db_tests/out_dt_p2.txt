@@ -1,0 +1,83 @@
+INSERT 0 0
+INSERT 0 0
+INSERT 0 0
+--- OK expected: whatsapp account
+INSERT 0 1
+--- FAIL expected: second account for the same outlet
+ERROR:  duplicate key value violates unique constraint "whatsapp_accounts_outlet_id_key"
+DETAIL:  Key (outlet_id)=(00000000-0000-0000-0000-0000000000a1) already exists.
+--- FAIL expected: same phone_number_id on another outlet
+ERROR:  duplicate key value violates unique constraint "whatsapp_accounts_phone_number_id_key"
+DETAIL:  Key (phone_number_id)=(p1) already exists.
+--- FAIL expected: invalid account status
+ERROR:  new row for relation "whatsapp_accounts" violates check constraint "whatsapp_accounts_status_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-00000000aaa1, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, META_CLOUD, w1, p1, null, enc, READY, null, null, null, galla_bill_v1, en, NOT_CREATED, null, null, null, 2026-11-27 16:23:04.378568+00, 2026-11-27 16:23:04.378568+00, 0).
+--- FAIL expected: invalid template status
+ERROR:  new row for relation "whatsapp_accounts" violates check constraint "whatsapp_accounts_bill_template_status_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-00000000aaa1, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, META_CLOUD, w1, p1, null, enc, PENDING, null, null, null, galla_bill_v1, en, LIVE, null, null, null, 2026-11-27 16:23:04.378568+00, 2026-11-27 16:23:04.378568+00, 0).
+--- OK expected: opt-in recorded in person by staff
+INSERT 0 1
+--- FAIL expected: phone without +country code
+ERROR:  new row for relation "customer_consents" violates check constraint "customer_consents_phone_e164_check"
+DETAIL:  Failing row contains (38588598-0b42-4f8e-865e-ec45efca24c0, 00000000-0000-0000-0000-000000000001, null, 9876543210, WHATSAPP, BILL, OPTED_IN, IN_PERSON, x, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:04.382546+00).
+--- FAIL expected: phone with spaces
+ERROR:  new row for relation "customer_consents" violates check constraint "customer_consents_phone_e164_check"
+DETAIL:  Failing row contains (e9f70464-e906-4abc-bd9b-31206008105b, 00000000-0000-0000-0000-000000000001, null, +91 98765 43210, WHATSAPP, BILL, OPTED_IN, IN_PERSON, x, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:04.382727+00).
+--- FAIL expected: customer-message method cannot be an opt-in
+ERROR:  new row for relation "customer_consents" violates check constraint "customer_consents_check"
+DETAIL:  Failing row contains (688b6811-a973-4a0b-a8b7-3cf26f8d23a2, 00000000-0000-0000-0000-000000000001, null, +919876543210, WHATSAPP, BILL, OPTED_IN, CUSTOMER_MESSAGE, x, null, 2026-11-27 16:23:04.382851+00).
+--- OK expected: customer STOP reply recorded without a user
+INSERT 0 1
+--- FAIL expected: staff-recorded consent without the staff user
+ERROR:  new row for relation "customer_consents" violates check constraint "customer_consents_check1"
+DETAIL:  Failing row contains (132ebc18-142c-419e-9704-cc3d18a15bb1, 00000000-0000-0000-0000-000000000001, null, +919876543210, WHATSAPP, BILL, OPTED_IN, IN_PERSON, x, null, 2026-11-27 16:23:04.383302+00).
+--- FAIL expected: blank statement
+ERROR:  new row for relation "customer_consents" violates check constraint "customer_consents_statement_shown_check"
+DETAIL:  Failing row contains (6d25e43f-a764-484e-9509-699cfb58f483, 00000000-0000-0000-0000-000000000001, null, +919876543210, WHATSAPP, BILL, OPTED_IN, IN_PERSON,    , 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:04.383412+00).
+--- OK expected: newest consent row is the OPTED_OUT one
+  status   
+-----------
+ OPTED_OUT
+(1 row)
+
+--- OK expected: bill message
+INSERT 0 1
+--- FAIL expected: duplicate provider message id
+ERROR:  duplicate key value violates unique constraint "ux_wa_msg_provider_id"
+DETAIL:  Key (provider_message_id)=(wamid.AAA) already exists.
+--- OK expected: several messages without a provider id yet (queued)
+INSERT 0 2
+--- FAIL expected: BILL message without bill id
+ERROR:  new row for relation "whatsapp_messages" violates check constraint "whatsapp_messages_check"
+DETAIL:  Failing row contains (35a24463-ea6b-4ffb-88d6-135eddfc1b6e, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-00000000aaa1, BILL, null, null, null, +919876543210, galla_bill_v1, null, QUEUED, 0, null, null, null, 2026-11-27 16:23:04.386509+00, null, null, null, null).
+--- FAIL expected: DELIVERY_UPDATE without delivery id
+ERROR:  new row for relation "whatsapp_messages" violates check constraint "whatsapp_messages_check1"
+DETAIL:  Failing row contains (61dde744-b1d3-4c3f-973d-6cde1297bd46, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-00000000aaa1, DELIVERY_UPDATE, null, null, null, +919876543210, galla_delivery_picked_up_v1, null, QUEUED, 0, null, null, null, 2026-11-27 16:23:04.386716+00, null, null, null, null).
+--- FAIL expected: bad message status
+ERROR:  new row for relation "whatsapp_messages" violates check constraint "whatsapp_messages_status_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-00000000bb01, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-00000000aaa1, BILL, 00000000-0000-0000-0000-000000000b11, null, null, +919876543210, galla_bill_v1, wamid.AAA, DONE, 0, null, null, null, 2026-11-27 16:23:04.383962+00, null, null, null, null).
+--- FAIL expected: message phone not E.164
+ERROR:  new row for relation "whatsapp_messages" violates check constraint "whatsapp_messages_to_phone_check"
+DETAIL:  Failing row contains (ba6ec79d-5dd0-4e29-aa88-a1eb7dfa6e27, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-00000000aaa1, BILL, 00000000-0000-0000-0000-000000000b11, null, null, 098765, galla_bill_v1, null, QUEUED, 0, null, null, null, 2026-11-27 16:23:04.387019+00, null, null, null, null).
+--- OK expected: webhook event once
+INSERT 0 1
+--- FAIL expected: same webhook event again
+ERROR:  duplicate key value violates unique constraint "whatsapp_webhook_events_event_key_key"
+DETAIL:  Key (event_key)=(wamid.AAA:delivered:1700000000) already exists.
+--- OK expected: share link
+INSERT 0 1
+--- FAIL expected: duplicate token hash
+ERROR:  duplicate key value violates unique constraint "bill_share_links_token_hash_key"
+DETAIL:  Key (token_hash)=(hash1) already exists.
+--- FAIL expected: negative view count
+ERROR:  new row for relation "bill_share_links" violates check constraint "bill_share_links_view_count_check"
+DETAIL:  Failing row contains (94e32b86-73be-4979-9ef6-745496504e2e, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-000000000b11, hash1, 2027-02-25 16:23:04.388087+00, null, null, 2026-11-27 16:23:04.388087+00, null, -1).
+--- FAIL expected: share link days 0
+ERROR:  new row for relation "outlets" violates check constraint "outlets_bill_share_link_days_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000001, O1, Out, null, null, null, null, null, IN, null, null, Asia/Kolkata, INR, Rs, null, null, null, null, null, null, null, f, 0.00, null, NEAREST_1, 4, 4, f, null, {}, ACTIVE, 2026-11-27 16:23:03.134241+00, 2026-11-27 16:23:03.134241+00, 0, 0.00, null, null, NONE, 0.00, null, null, 1.00, null, t, 0, t, 72, NONE, 0.00, {TAKEAWAY,DELIVERY}, null, ZERO_TAX, f, 500.00, t, f, f, null, null, null, null, UNREGISTERED, null, BILL, OUTLET_STATE, f, en).
+--- OK expected: outlet defaults
+ whatsapp_bill_prompt | bill_share_link_days 
+----------------------+----------------------
+ t                    |                   90
+(1 row)
+

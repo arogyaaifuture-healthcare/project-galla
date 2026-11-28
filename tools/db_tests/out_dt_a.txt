@@ -1,0 +1,190 @@
+--- OK expected: pending device with a pairing code
+INSERT 0 1
+--- FAIL expected: series code B is reserved for the server default series
+ERROR:  new row for relation "devices" violates check constraint "devices_series_code_check"
+DETAIL:  Failing row contains (8939ea2a-9072-46cd-85ae-ae80a3b9c577, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, X, B, PENDING, h, 2026-11-27 17:23:06.561793+00, null, null, 0, null, null, null, null, null, 0, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:06.561793+00, 2026-11-27 16:23:06.561793+00, null, null, 0).
+--- FAIL expected: series code must be upper-case
+ERROR:  new row for relation "devices" violates check constraint "devices_series_code_check"
+DETAIL:  Failing row contains (002ec2b9-0137-4741-9473-3638465117ca, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, X, a1, PENDING, h, 2026-11-27 17:23:06.562476+00, null, null, 0, null, null, null, null, null, 0, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:06.562476+00, 2026-11-27 16:23:06.562476+00, null, null, 0).
+--- FAIL expected: series code max 3 characters
+ERROR:  new row for relation "devices" violates check constraint "devices_series_code_check"
+DETAIL:  Failing row contains (1923bc93-d59d-49ef-8392-ceff1b9508af, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, X, ABCD, PENDING, h, 2026-11-27 17:23:06.562911+00, null, null, 0, null, null, null, null, null, 0, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:06.562911+00, 2026-11-27 16:23:06.562911+00, null, null, 0).
+--- FAIL expected: series code must start with a letter
+ERROR:  new row for relation "devices" violates check constraint "devices_series_code_check"
+DETAIL:  Failing row contains (4366ca61-39b7-457f-8a6e-2c847fff2ab9, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, X, 1A, PENDING, h, 2026-11-27 17:23:06.563202+00, null, null, 0, null, null, null, null, null, 0, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:06.563202+00, 2026-11-27 16:23:06.563202+00, null, null, 0).
+--- FAIL expected: duplicate series code in the same outlet
+ERROR:  duplicate key value violates unique constraint "devices_outlet_id_series_code_key"
+DETAIL:  Key (outlet_id, series_code)=(00000000-0000-0000-0000-0000000000a1, A) already exists.
+--- OK expected: same series code in another outlet
+INSERT 0 1
+--- FAIL expected: ACTIVE device without a device key
+ERROR:  new row for relation "devices" violates check constraint "devices_check1"
+DETAIL:  Failing row contains (f0b2f17f-1746-477d-a074-ed5bdefdb0ce, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, X, D, ACTIVE, null, null, null, 2026-11-27 16:23:06.565467+00, 0, null, null, null, null, null, 0, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:06.565467+00, 2026-11-27 16:23:06.565467+00, null, null, 0).
+--- FAIL expected: REVOKED device without revoked_by
+ERROR:  new row for relation "devices" violates check constraint "devices_check2"
+DETAIL:  Failing row contains (08794615-08e9-43ea-99cf-bdedc3f70683, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, X, E, REVOKED, null, null, null, null, 0, null, null, null, null, null, 0, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:06.565985+00, 2026-11-27 16:23:06.565985+00, 2026-11-27 16:23:06.565985+00, null, 0).
+--- OK expected: REVOKED device with revoked_by
+INSERT 0 1
+--- FAIL expected: PENDING device without a pairing code
+ERROR:  new row for relation "devices" violates check constraint "devices_check"
+DETAIL:  Failing row contains (a4a527b9-dda4-4e72-857d-abcbe493132f, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, X, G, PENDING, null, null, null, null, 0, null, null, null, null, null, 0, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:06.567552+00, 2026-11-27 16:23:06.567552+00, null, null, 0).
+--- FAIL expected: reported local seq without fiscal year
+ERROR:  new row for relation "devices" violates check constraint "devices_check3"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-00000000dd01, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, Counter 1, A, ACTIVE, null, null, h1, 2026-11-27 16:23:06.491369+00, 0, null, null, null, 5, null, 0, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:06.491369+00, 2026-11-27 16:23:06.491369+00, null, null, 0).
+--- OK expected: reported local seq with fiscal year
+UPDATE 1
+--- FAIL expected: negative pending count
+ERROR:  new row for relation "devices" violates check constraint "devices_pending_count_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-00000000dd01, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, Counter 1, A, ACTIVE, null, null, h1, 2026-11-27 16:23:06.491369+00, 0, null, null, null, 5, 2026-27, -1, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:06.491369+00, 2026-11-27 16:23:06.491369+00, null, null, 0).
+--- OK expected: sync command recorded
+INSERT 0 1
+--- FAIL expected: same command_id pushed twice is a duplicate (idempotency)
+ERROR:  duplicate key value violates unique constraint "sync_commands_tenant_id_command_id_key"
+DETAIL:  Key (tenant_id, command_id)=(00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000c0001) already exists.
+--- FAIL expected: same device sequence number used twice
+ERROR:  duplicate key value violates unique constraint "sync_commands_device_id_device_seq_key"
+DETAIL:  Key (device_id, device_seq)=(00000000-0000-0000-0000-00000000dd01, 1) already exists.
+--- FAIL expected: APPLIED command without applied_at
+ERROR:  new row for relation "sync_commands" violates check constraint "sync_commands_check1"
+DETAIL:  Failing row contains (217f9ce7-4e97-47cd-af14-4671f0459696, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-00000000dd01, 00000000-0000-0000-0000-0000000c0003, 3, BILL_GENERATE, 1, BILL, c8a361ea-f592-4655-b8a2-25984c2bd7a7, null, {}, h, APPLIED, null, null, 0, 2026-11-27 16:23:06.573041+00, 2026-11-27 16:23:06.573041+00, null).
+--- OK expected: APPLIED command with applied_at
+INSERT 0 1
+--- FAIL expected: REJECTED command without an error code
+ERROR:  new row for relation "sync_commands" violates check constraint "sync_commands_check2"
+DETAIL:  Failing row contains (85d79e39-a334-4125-ba92-b695bdeeafef, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-00000000dd01, 00000000-0000-0000-0000-0000000c0005, 5, BILL_GENERATE, 1, BILL, 14656cf2-34d2-43aa-84bb-e3ab36de5e65, null, {}, h, REJECTED, null, null, 0, 2026-11-27 16:23:06.574486+00, 2026-11-27 16:23:06.574486+00, null).
+--- FAIL expected: WAITING_DEPENDENCY without the command it waits for
+ERROR:  new row for relation "sync_commands" violates check constraint "sync_commands_check3"
+DETAIL:  Failing row contains (bcedcf27-9ae2-4e41-9dd3-023128c5fb97, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-00000000dd01, 00000000-0000-0000-0000-0000000c0006, 6, BILL_GENERATE, 1, BILL, abd8b43a-a454-4724-bf06-bd45c344ef0f, null, {}, h, WAITING_DEPENDENCY, null, null, 0, 2026-11-27 16:23:06.574934+00, 2026-11-27 16:23:06.574934+00, null).
+--- OK expected: payment waits for its bill command
+INSERT 0 1
+--- FAIL expected: command cannot depend on itself
+ERROR:  new row for relation "sync_commands" violates check constraint "sync_commands_check"
+DETAIL:  Failing row contains (3aa4a453-81e6-402e-95c0-5d0060fbe22b, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-00000000dd01, 00000000-0000-0000-0000-0000000c0008, 8, BILL_GENERATE, 1, BILL, 0cf67ed0-78e9-4c3e-8063-f225e56fcffd, 00000000-0000-0000-0000-0000000c0008, {}, h, WAITING_DEPENDENCY, null, null, 0, 2026-11-27 16:23:06.576219+00, 2026-11-27 16:23:06.576219+00, null).
+--- FAIL expected: unknown aggregate type
+ERROR:  new row for relation "sync_commands" violates check constraint "sync_commands_aggregate_type_check"
+DETAIL:  Failing row contains (b88e7546-1ee4-425e-9bc0-6cbc7a99cdb6, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-00000000dd01, 00000000-0000-0000-0000-0000000c0009, 9, BILL_GENERATE, 1, WIDGET, 990a053c-22a5-4496-b1bc-d0376774ac33, null, {}, h, RECEIVED, null, null, 0, 2026-11-27 16:23:06.576573+00, 2026-11-27 16:23:06.576573+00, null).
+--- FAIL expected: command type must be UPPER_SNAKE
+ERROR:  new row for relation "sync_commands" violates check constraint "sync_commands_command_type_check"
+DETAIL:  Failing row contains (9f2be2c6-1ea8-4597-95c3-c8c875c021c9, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-00000000dd01, 00000000-0000-0000-0000-0000000c000a, 10, billGenerate, 1, BILL, 8f4cf7f7-e6fe-4156-bfe9-30d9cb0c408e, null, {}, h, RECEIVED, null, null, 0, 2026-11-27 16:23:06.576847+00, 2026-11-27 16:23:06.576847+00, null).
+--- OK expected: open gap 5..7
+INSERT 0 1
+--- FAIL expected: overlapping open gap 6..9 in the same series/year
+ERROR:  conflicting key value violates exclusion constraint "bill_number_gaps_outlet_id_series_fiscal_year_int4range_excl"
+DETAIL:  Key (outlet_id, series, fiscal_year, int4range(from_seq, to_seq, '[]'::text))=(00000000-0000-0000-0000-0000000000a1, A, 2026-27, [6,10)) conflicts with existing key (outlet_id, series, fiscal_year, int4range(from_seq, to_seq, '[]'::text))=(00000000-0000-0000-0000-0000000000a1, A, 2026-27, [5,8)).
+--- OK expected: adjacent open gap 8..9
+INSERT 0 1
+--- OK expected: same range in another fiscal year
+INSERT 0 1
+--- OK expected: same range in another series
+INSERT 0 1
+--- FAIL expected: gap with to_seq < from_seq
+ERROR:  new row for relation "bill_number_gaps" violates check constraint "bill_number_gaps_check"
+DETAIL:  Failing row contains (f4ce7be4-ecef-48dd-9d29-d3426dafb5a7, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-00000000dd01, A, 2026-27, 12, 11, NOT_YET_SYNCED, OPEN, null, null, null, 2026-11-27 16:23:06.583205+00, null).
+--- FAIL expected: EXPLAINED gap without an explanation
+ERROR:  new row for relation "bill_number_gaps" violates check constraint "bill_number_gaps_check1"
+DETAIL:  Failing row contains (aeab6c82-d3e7-4805-8f10-4e110574d811, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-00000000dd01, A, 2026-27, 20, 21, NOT_YET_SYNCED, EXPLAINED, null, null, null, 2026-11-27 16:23:06.583481+00, null).
+--- FAIL expected: EXPLAINED gap with a too-short explanation
+ERROR:  new row for relation "bill_number_gaps" violates check constraint "bill_number_gaps_check1"
+DETAIL:  Failing row contains (9e452cde-a65d-4775-a0bc-31254472cbba, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-00000000dd01, A, 2026-27, 20, 21, NOT_YET_SYNCED, EXPLAINED, x, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:06.583763+00, 2026-11-27 16:23:06.583763+00, null).
+--- OK expected: EXPLAINED gap with explanation, user and time
+INSERT 0 1
+--- FAIL expected: FILLED gap without filled_at
+ERROR:  new row for relation "bill_number_gaps" violates check constraint "bill_number_gaps_check2"
+DETAIL:  Failing row contains (a32bdb60-b9eb-4bd7-b222-7ed962a46475, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-00000000dd01, A, 2026-27, 30, 31, NOT_YET_SYNCED, FILLED, null, null, null, 2026-11-27 16:23:06.585224+00, null).
+--- OK expected: FILLED gap with filled_at
+INSERT 0 1
+--- OK expected: a new open gap may reuse the range of a FILLED gap (history is kept)
+INSERT 0 1
+--- OK expected: CALC_MISMATCH with bill and CRITICAL
+INSERT 0 1
+--- FAIL expected: CALC_MISMATCH must be CRITICAL
+ERROR:  new row for relation "sync_conflicts" violates check constraint "sync_conflicts_check1"
+DETAIL:  Failing row contains (da7a65dd-ac62-4e20-99d9-2c836e20244a, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-00000000dd01, null, null, 00000000-0000-0000-0000-000000000b11, CALC_MISMATCH, WARN, {}, OPEN, null, null, null, 2026-11-27 16:23:06.590749+00).
+--- FAIL expected: CALC_MISMATCH must name the bill
+ERROR:  new row for relation "sync_conflicts" violates check constraint "sync_conflicts_check1"
+DETAIL:  Failing row contains (ba040a36-07bc-4646-a0ec-bffd50057688, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-00000000dd01, null, null, null, CALC_MISMATCH, CRITICAL, {}, OPEN, null, null, null, 2026-11-27 16:23:06.591152+00).
+--- FAIL expected: TABLE_CONFLICT must name the order
+ERROR:  new row for relation "sync_conflicts" violates check constraint "sync_conflicts_check2"
+DETAIL:  Failing row contains (45339557-da4d-466e-b593-783118f42c17, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-00000000dd01, null, null, null, TABLE_CONFLICT, WARN, {}, OPEN, null, null, null, 2026-11-27 16:23:06.59141+00).
+--- OK expected: TABLE_CONFLICT with order
+INSERT 0 1
+--- FAIL expected: NUMBER_GAP must name the device
+ERROR:  new row for relation "sync_conflicts" violates check constraint "sync_conflicts_check3"
+DETAIL:  Failing row contains (497d3aff-a0c3-480d-b3d0-871d4670caff, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, null, null, null, null, NUMBER_GAP, WARN, {}, OPEN, null, null, null, 2026-11-27 16:23:06.593288+00).
+--- FAIL expected: unknown conflict type
+ERROR:  new row for relation "sync_conflicts" violates check constraint "sync_conflicts_conflict_type_check"
+DETAIL:  Failing row contains (20f040ee-1478-412a-b9bc-b59cd4feb875, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-00000000dd01, null, null, null, SOMETHING, WARN, {}, OPEN, null, null, null, 2026-11-27 16:23:06.593596+00).
+--- FAIL expected: unknown severity
+ERROR:  new row for relation "sync_conflicts" violates check constraint "sync_conflicts_severity_check"
+DETAIL:  Failing row contains (fbe93a89-a975-4bbe-9f2b-a0d51925b676, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-00000000dd01, null, null, null, CLOCK_SKEW, LOW, {}, OPEN, null, null, null, 2026-11-27 16:23:06.593865+00).
+--- FAIL expected: RESOLVED conflict without a note
+ERROR:  new row for relation "sync_conflicts" violates check constraint "sync_conflicts_check"
+DETAIL:  Failing row contains (c57298bc-0a4e-442e-8ad1-7fc8356ad438, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-00000000dd01, null, null, null, CLOCK_SKEW, INFO, {}, RESOLVED, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:06.594226+00, 2026-11-27 16:23:06.594226+00).
+--- OK expected: RESOLVED conflict with note, user and time
+INSERT 0 1
+--- OK expected: offline order carries device, client time and device order number
+INSERT 0 1
+--- FAIL expected: offline order without a device
+ERROR:  new row for relation "orders" violates check constraint "orders_offline_has_device"
+DETAIL:  Failing row contains (6b00cfd6-4268-42a7-8718-bfef2940a16e, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 11, 2026-11-24, TAKEAWAY, null, null, null, OPEN, null, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:06.597402+00, 2026-11-27 16:23:06.597402+00, null, 0, DIRECT, null, null, null, t, null, null, null, f, null).
+--- FAIL expected: offline order without a device order number
+ERROR:  new row for relation "orders" violates check constraint "orders_offline_has_device"
+DETAIL:  Failing row contains (b0c02141-fc8f-429a-9719-cd02d92de75f, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 11, 2026-11-24, TAKEAWAY, null, null, null, OPEN, null, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:06.597799+00, 2026-11-27 16:23:06.597799+00, null, 0, DIRECT, null, null, 00000000-0000-0000-0000-00000000dd01, t, 2026-11-27 16:23:06.597799+00, null, null, f, null).
+--- FAIL expected: same device order number twice on one business date
+ERROR:  duplicate key value violates unique constraint "ux_orders_device_no"
+DETAIL:  Key (origin_device_id, business_date, device_order_no)=(00000000-0000-0000-0000-00000000dd01, 2026-11-24, 12) already exists.
+--- OK expected: same device order number on another business date
+INSERT 0 1
+--- FAIL expected: device order number must be positive
+ERROR:  new row for relation "orders" violates check constraint "orders_device_order_no_check"
+DETAIL:  Failing row contains (2070309e-a8c7-4b06-ab42-b0523fadd4ad, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 15, 2026-11-26, TAKEAWAY, null, null, null, OPEN, null, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:06.599585+00, 2026-11-27 16:23:06.599585+00, null, 0, DIRECT, null, null, 00000000-0000-0000-0000-00000000dd01, t, 2026-11-27 16:23:06.599585+00, null, 0, f, null).
+--- FAIL expected: needs_attention without a reason
+ERROR:  new row for relation "orders" violates check constraint "orders_attention_has_reason"
+DETAIL:  Failing row contains (7c8651ef-6f5a-4b6d-9f70-c493f4efeb17, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 16, 2026-11-24, TAKEAWAY, null, null, null, OPEN, null, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:06.599931+00, 2026-11-27 16:23:06.599931+00, null, 0, DIRECT, null, null, 00000000-0000-0000-0000-00000000dd01, t, 2026-11-27 16:23:06.599931+00, null, 20, t, null).
+--- OK expected: needs_attention with a reason
+INSERT 0 1
+--- OK expected: the database allows two OPEN orders on one table (the later one is flagged, never dropped)
+INSERT 0 2
+--- OK expected: offline bill in the device series
+INSERT 0 1
+--- FAIL expected: offline bill without client_created_at
+ERROR:  new row for relation "bills" violates check constraint "bills_offline_has_device"
+DETAIL:  Failing row contains (f02fef31-6ef1-48ce-8b25-3a16f0ce8016, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-0000000000e1, A, 2026-27, 2, A-2026-27-000002, GENERATED, f, INR, 50.00, null, null, 0.00, null, 0.00, 0.00, 50.00, 0.00, 50.00, 0.00, null, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:06.604481+00, null, null, null, null, 0, 0.00, 00000000-0000-0000-0000-00000000dd01, t, null, null, f, null, 0.00, 0.00, null, null, null, null, null, null, null, null, null, null, null, null).
+--- FAIL expected: duplicate sequence in the same series/year (already-synced bill pushed again)
+ERROR:  duplicate key value violates unique constraint "bills_outlet_id_series_fiscal_year_bill_seq_key"
+DETAIL:  Key (outlet_id, series, fiscal_year, bill_seq)=(00000000-0000-0000-0000-0000000000a1, A, 2026-27, 1) already exists.
+--- FAIL expected: duplicate bill number
+ERROR:  duplicate key value violates unique constraint "bills_outlet_id_bill_number_key"
+DETAIL:  Key (outlet_id, bill_number)=(00000000-0000-0000-0000-0000000000a1, A-2026-27-000001) already exists.
+--- OK expected: another sequence in the device series
+INSERT 0 1
+--- OK expected: offline payment with device
+INSERT 0 1
+--- FAIL expected: offline payment without a device
+ERROR:  new row for relation "payments" violates check constraint "payments_offline_has_device"
+DETAIL:  Failing row contains (610aff4e-952e-470b-9c38-6ca33697f7e2, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000b11, CASH, 50.00, null, null, SUCCESS, MANUAL, null, null, null, null, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:06.610826+00, null, null, null, null, t, null, null, 0.00, null, null, null).
+--- OK expected: offline KOT with device KOT number
+INSERT 0 1
+--- FAIL expected: offline KOT without a device KOT number
+ERROR:  new row for relation "kots" violates check constraint "kots_offline_has_device"
+DETAIL:  Failing row contains (e57ac01c-b282-417d-814c-a11c7728d2d0, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-0000000000e1, 51, 2026-11-23, null, SENT, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:06.613336+00, 00000000-0000-0000-0000-00000000dd01, t, 2026-11-27 16:23:06.613336+00, null, null).
+--- FAIL expected: same device KOT number twice on one date
+ERROR:  duplicate key value violates unique constraint "ux_kots_device_no"
+DETAIL:  Key (origin_device_id, business_date, device_kot_no)=(00000000-0000-0000-0000-00000000dd01, 2026-11-23, 7) already exists.
+--- OK expected: outlet defaults: offline enabled, 72 hours
+ offline_enabled | offline_max_hours 
+-----------------+-------------------
+ t               |                72
+(1 row)
+
+--- FAIL expected: offline_max_hours = 0
+ERROR:  new row for relation "outlets" violates check constraint "outlets_offline_max_hours_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000001, O1, Out, null, null, null, null, null, IN, null, null, Asia/Kolkata, INR, Rs, null, null, null, null, null, null, null, f, 0.00, null, NEAREST_1, 4, 4, f, null, {}, ACTIVE, 2026-11-27 16:23:06.483339+00, 2026-11-27 16:23:06.483339+00, 0, 0.00, null, null, NONE, 0.00, null, null, 1.00, null, t, 90, t, 0, NONE, 0.00, {TAKEAWAY,DELIVERY}, null, ZERO_TAX, f, 500.00, t, f, f, null, null, null, null, UNREGISTERED, null, BILL, OUTLET_STATE, f, en).
+--- FAIL expected: offline_max_hours = 721
+ERROR:  new row for relation "outlets" violates check constraint "outlets_offline_max_hours_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000001, O1, Out, null, null, null, null, null, IN, null, null, Asia/Kolkata, INR, Rs, null, null, null, null, null, null, null, f, 0.00, null, NEAREST_1, 4, 4, f, null, {}, ACTIVE, 2026-11-27 16:23:06.483339+00, 2026-11-27 16:23:06.483339+00, 0, 0.00, null, null, NONE, 0.00, null, null, 1.00, null, t, 90, t, 721, NONE, 0.00, {TAKEAWAY,DELIVERY}, null, ZERO_TAX, f, 500.00, t, f, f, null, null, null, null, UNREGISTERED, null, BILL, OUTLET_STATE, f, en).
+--- OK expected: offline_max_hours = 720
+UPDATE 1
+--- FAIL expected: FK: sync command for an unknown device
+ERROR:  insert or update on table "sync_commands" violates foreign key constraint "sync_commands_device_id_fkey"
+DETAIL:  Key (device_id)=(00000000-0000-0000-0000-00000000ee99) is not present in table "devices".

@@ -1,0 +1,17 @@
+INSERT 0 0
+INSERT 0 1
+INSERT 0 1
+--- OK expected: shift on an existing device of the same outlet
+INSERT 0 1
+UPDATE 1
+--- FAIL expected: shift pointing at a device that does not exist
+ERROR:  insert or update on table "cashier_shifts" violates foreign key constraint "cashier_shifts_device_id_fkey"
+DETAIL:  Key (device_id)=(00000000-0000-0000-0000-00000000dead) is not present in table "devices".
+--- FAIL expected: shift at outlet 2 using a device of outlet 1
+ERROR:  SHIFT_DEVICE_OTHER_OUTLET
+CONTEXT:  PL/pgSQL function fn_shift_device_same_outlet() line 7 at RAISE
+--- FAIL expected: deleting a device that still has a shift
+ERROR:  update or delete on table "devices" violates foreign key constraint "cashier_shifts_device_id_fkey" on table "cashier_shifts"
+DETAIL:  Key (id)=(00000000-0000-0000-0000-00000000d016) is still referenced from table "cashier_shifts".
+--- OK expected: shift without a device (online-only terminal)
+INSERT 0 1

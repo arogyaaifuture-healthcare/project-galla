@@ -1,0 +1,652 @@
+=== 1 outlet settings
+--- FAIL expected: invalid packaging mode
+ERROR:  new row for relation "outlets" violates check constraint "outlets_packaging_mode_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000001, O1, Out, null, null, null, null, null, IN, null, null, Asia/Kolkata, INR, Rs, null, null, null, null, null, null, null, f, 0.00, null, NEAREST_1, 4, 4, f, null, {}, ACTIVE, 2026-11-27 16:23:07.524983+00, 2026-11-27 16:23:07.524983+00, 0, 0.00, null, null, NONE, 0.00, null, null, 1.00, null, t, 90, t, 72, PER_BOX, 0.00, {TAKEAWAY,DELIVERY}, null, ZERO_TAX, f, 500.00, t, f, f, null, null, null, null, UNREGISTERED, null, BILL, OUTLET_STATE, f, en).
+--- FAIL expected: FLAT_PER_ORDER with zero flat charge
+ERROR:  new row for relation "outlets" violates check constraint "outlets_packaging_flat_needs_amount"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000001, O1, Out, null, null, null, null, null, IN, null, null, Asia/Kolkata, INR, Rs, null, null, null, null, null, null, null, f, 0.00, null, NEAREST_1, 4, 4, f, null, {}, ACTIVE, 2026-11-27 16:23:07.524983+00, 2026-11-27 16:23:07.524983+00, 0, 0.00, null, null, NONE, 0.00, null, null, 1.00, null, t, 90, t, 72, FLAT_PER_ORDER, 0.00, {TAKEAWAY,DELIVERY}, null, ZERO_TAX, f, 500.00, t, f, f, null, null, null, null, UNREGISTERED, null, BILL, OUTLET_STATE, f, en).
+--- FAIL expected: packaging order type not in the allowed list
+ERROR:  new row for relation "outlets" violates check constraint "outlets_packaging_order_types_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000001, O1, Out, null, null, null, null, null, IN, null, null, Asia/Kolkata, INR, Rs, null, null, null, null, null, null, null, f, 0.00, null, NEAREST_1, 4, 4, f, null, {}, ACTIVE, 2026-11-27 16:23:07.524983+00, 2026-11-27 16:23:07.524983+00, 0, 0.00, null, null, NONE, 0.00, null, null, 1.00, null, t, 90, t, 72, NONE, 0.00, {ROOM_SERVICE}, null, ZERO_TAX, f, 500.00, t, f, f, null, null, null, null, UNREGISTERED, null, BILL, OUTLET_STATE, f, en).
+--- FAIL expected: invalid nc tax mode
+ERROR:  new row for relation "outlets" violates check constraint "outlets_nc_tax_mode_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000001, O1, Out, null, null, null, null, null, IN, null, null, Asia/Kolkata, INR, Rs, null, null, null, null, null, null, null, f, 0.00, null, NEAREST_1, 4, 4, f, null, {}, ACTIVE, 2026-11-27 16:23:07.524983+00, 2026-11-27 16:23:07.524983+00, 0, 0.00, null, null, NONE, 0.00, null, null, 1.00, null, t, 90, t, 72, NONE, 0.00, {TAKEAWAY,DELIVERY}, null, HALF_TAX, f, 500.00, t, f, f, null, null, null, null, UNREGISTERED, null, BILL, OUTLET_STATE, f, en).
+--- FAIL expected: open item max price 0
+ERROR:  new row for relation "outlets" violates check constraint "outlets_open_item_max_price_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000001, O1, Out, null, null, null, null, null, IN, null, null, Asia/Kolkata, INR, Rs, null, null, null, null, null, null, null, f, 0.00, null, NEAREST_1, 4, 4, f, null, {}, ACTIVE, 2026-11-27 16:23:07.524983+00, 2026-11-27 16:23:07.524983+00, 0, 0.00, null, null, NONE, 0.00, null, null, 1.00, null, t, 90, t, 72, NONE, 0.00, {TAKEAWAY,DELIVERY}, null, ZERO_TAX, f, 0.00, t, f, f, null, null, null, null, UNREGISTERED, null, BILL, OUTLET_STATE, f, en).
+--- FAIL expected: negative flat packaging charge
+ERROR:  new row for relation "outlets" violates check constraint "outlets_packaging_flat_charge_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000001, O1, Out, null, null, null, null, null, IN, null, null, Asia/Kolkata, INR, Rs, null, null, null, null, null, null, null, f, 0.00, null, NEAREST_1, 4, 4, f, null, {}, ACTIVE, 2026-11-27 16:23:07.524983+00, 2026-11-27 16:23:07.524983+00, 0, 0.00, null, null, NONE, 0.00, null, null, 1.00, null, t, 90, t, 72, NONE, -1.00, {TAKEAWAY,DELIVERY}, null, ZERO_TAX, f, 500.00, t, f, f, null, null, null, null, UNREGISTERED, null, BILL, OUTLET_STATE, f, en).
+--- OK expected: valid packaging + NC + open-item settings
+UPDATE 1
+--- FAIL expected: station warn minutes not below late minutes
+ERROR:  new row for relation "kitchen_stations" violates check constraint "stations_sla_order"
+DETAIL:  Failing row contains (723117f0-d698-42b4-bc8f-1659904690fd, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, S-bad, t, 20, 20).
+--- FAIL expected: station warn minutes 0
+ERROR:  new row for relation "kitchen_stations" violates check constraint "kitchen_stations_sla_warn_minutes_check"
+DETAIL:  Failing row contains (21b9cb3f-06d9-46e8-9f54-8e7d4fbe402c, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, S-bad2, t, 0, 20).
+--- OK expected: station with SLA 8/15
+INSERT 0 1
+=== 2 reason codes and role permissions
+--- OK expected: NC reason code
+INSERT 0 1
+--- FAIL expected: duplicate reason code in the same kind
+ERROR:  duplicate key value violates unique constraint "reason_codes_tenant_id_kind_code_key"
+DETAIL:  Key (tenant_id, kind, code)=(00000000-0000-0000-0000-000000000001, NC, OWNER_GUEST) already exists.
+--- OK expected: same code under another kind
+INSERT 0 1
+--- FAIL expected: lowercase code
+ERROR:  new row for relation "reason_codes" violates check constraint "reason_codes_code_check"
+DETAIL:  Failing row contains (2c0de2f8-9942-43d2-b8b6-d5f0924cc9d0, 00000000-0000-0000-0000-000000000001, NC, owner, x, t).
+--- FAIL expected: unknown kind
+ERROR:  new row for relation "reason_codes" violates check constraint "reason_codes_kind_check"
+DETAIL:  Failing row contains (9e177497-7fe0-443d-8f1b-00264eeb09c2, 00000000-0000-0000-0000-000000000001, WASTAGE, SPOIL, x, t).
+--- FAIL expected: blank label
+ERROR:  new row for relation "reason_codes" violates check constraint "reason_codes_label_check"
+DETAIL:  Failing row contains (3a2c9c42-641c-4d61-8a6d-5c6339d895bb, 00000000-0000-0000-0000-000000000001, NC, BLANK,    , t).
+--- OK expected: cashier may use open items at this outlet
+INSERT 0 1
+--- FAIL expected: same role+permission twice
+ERROR:  duplicate key value violates unique constraint "outlet_role_permissions_pkey"
+DETAIL:  Key (outlet_id, role, permission)=(00000000-0000-0000-0000-0000000000a1, CASHIER, OPEN_ITEM) already exists.
+--- FAIL expected: unknown permission
+ERROR:  new row for relation "outlet_role_permissions" violates check constraint "outlet_role_permissions_permission_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000001, CAPTAIN, DELETE_ALL, t).
+--- FAIL expected: unknown role
+ERROR:  new row for relation "outlet_role_permissions" violates check constraint "outlet_role_permissions_role_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000001, SUPER_ADMIN, OPEN_ITEM, t).
+=== 3 menu: barcode, packaging, kind
+--- OK expected: barcode on item 1
+UPDATE 1
+--- FAIL expected: same barcode on another active item of the outlet
+ERROR:  duplicate key value violates unique constraint "ux_menu_items_barcode"
+DETAIL:  Key (outlet_id, barcode)=(00000000-0000-0000-0000-0000000000a1, 8901234567890) already exists.
+--- OK expected: same barcode at another outlet
+UPDATE 1
+--- FAIL expected: barcode with a space
+ERROR:  new row for relation "menu_items" violates check constraint "menu_items_barcode_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000d2, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-0000000000c1, Item2, null, null, 50.00, null, NA, null, null, t, t, 0, 2026-11-27 16:23:08.66911+00, 2026-11-27 16:23:08.66911+00, 0, 89 01, 0.00, STANDARD, null, {}).
+--- FAIL expected: barcode too short
+ERROR:  new row for relation "menu_items" violates check constraint "menu_items_barcode_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000d2, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-0000000000c1, Item2, null, null, 50.00, null, NA, null, null, t, t, 0, 2026-11-27 16:23:08.66911+00, 2026-11-27 16:23:08.66911+00, 0, 123, 0.00, STANDARD, null, {}).
+--- OK expected: inactive item does not hold the barcode
+UPDATE 1
+UPDATE 1
+--- FAIL expected: negative packaging charge on item
+ERROR:  new row for relation "menu_items" violates check constraint "menu_items_packaging_charge_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000d2, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-0000000000c1, Item2, null, null, 50.00, null, NA, null, null, t, t, 0, 2026-11-27 16:23:08.66911+00, 2026-11-27 16:23:08.66911+00, 0, null, -1.00, STANDARD, null, {}).
+--- OK expected: packaging charge per unit
+UPDATE 1
+--- FAIL expected: unknown item kind
+ERROR:  new row for relation "menu_items" violates check constraint "menu_items_item_kind_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000d2, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-0000000000c1, Item2, null, null, 50.00, null, NA, null, null, t, t, 0, 2026-11-27 16:23:08.66911+00, 2026-11-27 16:23:08.66911+00, 0, null, 5.00, BUNDLE, null, {}).
+--- FAIL expected: overridden_fields with unknown field
+ERROR:  new row for relation "menu_items" violates check constraint "menu_items_overridden_fields_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000d2, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-0000000000c1, Item2, null, null, 50.00, null, NA, null, null, t, t, 0, 2026-11-27 16:23:08.66911+00, 2026-11-27 16:23:08.66911+00, 0, null, 5.00, STANDARD, null, {colour}).
+--- OK expected: overridden_fields with known fields
+UPDATE 1
+--- OK expected: copy published from a master item
+INSERT 0 1
+--- FAIL expected: a second copy of the same master item at the same outlet
+ERROR:  duplicate key value violates unique constraint "ux_menu_items_source"
+DETAIL:  Key (outlet_id, source_item_id)=(00000000-0000-0000-0000-0000000000a2, 00000000-0000-0000-0000-0000000000d1) already exists.
+=== 4 combo components
+--- OK expected: component 1 of the combo
+INSERT 0 1
+--- OK expected: component 2 with a variant
+INSERT 0 1
+--- FAIL expected: same component and variant twice
+ERROR:  duplicate key value violates unique constraint "ux_combo_components"
+DETAIL:  Key (combo_item_id, component_item_id, COALESCE(component_variant_id, '00000000-0000-0000-0000-000000000000'::uuid))=(00000000-0000-0000-0000-0000000000d3, 00000000-0000-0000-0000-0000000000d2, 00000000-0000-0000-0000-0000000000ea) already exists.
+--- FAIL expected: same component without variant twice
+ERROR:  duplicate key value violates unique constraint "ux_combo_components"
+DETAIL:  Key (combo_item_id, component_item_id, COALESCE(component_variant_id, '00000000-0000-0000-0000-000000000000'::uuid))=(00000000-0000-0000-0000-0000000000d3, 00000000-0000-0000-0000-0000000000d1, 00000000-0000-0000-0000-000000000000) already exists.
+--- FAIL expected: parent is not a combo
+ERROR:  COMBO_PARENT_NOT_COMBO
+CONTEXT:  PL/pgSQL function fn_combo_components_guard() line 6 at RAISE
+--- FAIL expected: a combo inside a combo
+INSERT 0 1
+ERROR:  COMBO_NESTING_NOT_ALLOWED
+CONTEXT:  PL/pgSQL function fn_combo_components_guard() line 7 at RAISE
+--- FAIL expected: component from another outlet
+ERROR:  COMBO_COMPONENT_OTHER_OUTLET
+CONTEXT:  PL/pgSQL function fn_combo_components_guard() line 8 at RAISE
+--- FAIL expected: variant of a different item
+ERROR:  COMBO_VARIANT_MISMATCH
+CONTEXT:  PL/pgSQL function fn_combo_components_guard() line 11 at RAISE
+--- FAIL expected: quantity 0
+ERROR:  new row for relation "combo_components" violates check constraint "combo_components_quantity_check"
+DETAIL:  Failing row contains (b7477db4-ca4b-49ae-b7e5-ea4713d788bd, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000d5, 00000000-0000-0000-0000-0000000000d2, null, 0.000, 0).
+--- FAIL expected: combo as its own component
+ERROR:  COMBO_NESTING_NOT_ALLOWED
+CONTEXT:  PL/pgSQL function fn_combo_components_guard() line 7 at RAISE
+--- OK expected: fractional component quantity 0.5
+INSERT 0 1
+=== 5 price rules
+--- OK expected: happy hour crossing midnight, price override on an item
+INSERT 0 1
+--- OK expected: category percent off on weekday lunch
+INSERT 0 1
+--- OK expected: variant price override
+INSERT 0 1
+--- FAIL expected: start = end
+ERROR:  new row for relation "price_rules" violates check constraint "price_rules_check"
+DETAIL:  Failing row contains (744a6542-2b95-4242-9ba0-dac3e216d501, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, Bad, ITEM, 00000000-0000-0000-0000-0000000000d1, null, null, {1,2,3,4,5,6,7}, 10:00:00, 10:00:00, null, null, {DINE_IN,TAKEAWAY,DELIVERY}, PRICE_OVERRIDE, 80.00, null, 0, t, 2026-11-27 16:23:08.829904+00, 2026-11-27 16:23:08.829904+00).
+--- FAIL expected: empty weekdays
+ERROR:  new row for relation "price_rules" violates check constraint "price_rules_weekdays_check"
+DETAIL:  Failing row contains (c93184f6-9b21-4b68-bac4-90c09f139dd1, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, Bad, ITEM, 00000000-0000-0000-0000-0000000000d1, null, null, {}, 10:00:00, 11:00:00, null, null, {DINE_IN,TAKEAWAY,DELIVERY}, PRICE_OVERRIDE, 80.00, null, 0, t, 2026-11-27 16:23:08.830279+00, 2026-11-27 16:23:08.830279+00).
+--- FAIL expected: weekday 8
+ERROR:  new row for relation "price_rules" violates check constraint "price_rules_weekdays_check"
+DETAIL:  Failing row contains (73c4b286-1a48-47d4-958f-a6204157f584, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, Bad, ITEM, 00000000-0000-0000-0000-0000000000d1, null, null, {8}, 10:00:00, 11:00:00, null, null, {DINE_IN,TAKEAWAY,DELIVERY}, PRICE_OVERRIDE, 80.00, null, 0, t, 2026-11-27 16:23:08.830702+00, 2026-11-27 16:23:08.830702+00).
+--- FAIL expected: weekday 0
+ERROR:  new row for relation "price_rules" violates check constraint "price_rules_weekdays_check"
+DETAIL:  Failing row contains (0917a297-e0c1-4645-9606-9f445f3e0fb6, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, Bad, ITEM, 00000000-0000-0000-0000-0000000000d1, null, null, {0}, 10:00:00, 11:00:00, null, null, {DINE_IN,TAKEAWAY,DELIVERY}, PRICE_OVERRIDE, 80.00, null, 0, t, 2026-11-27 16:23:08.831129+00, 2026-11-27 16:23:08.831129+00).
+--- FAIL expected: PRICE_OVERRIDE carrying a percent
+ERROR:  new row for relation "price_rules" violates check constraint "price_rules_check2"
+DETAIL:  Failing row contains (bf225f23-b3de-4a40-a60f-d7b0ca945418, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, Bad, ITEM, 00000000-0000-0000-0000-0000000000d1, null, null, {1,2,3,4,5,6,7}, 10:00:00, 11:00:00, null, null, {DINE_IN,TAKEAWAY,DELIVERY}, PRICE_OVERRIDE, 80.00, 10.00, 0, t, 2026-11-27 16:23:08.831563+00, 2026-11-27 16:23:08.831563+00).
+--- FAIL expected: PRICE_OVERRIDE without price
+ERROR:  new row for relation "price_rules" violates check constraint "price_rules_check2"
+DETAIL:  Failing row contains (973929cd-4eca-4970-9661-c5dfe1ec6b1f, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, Bad, ITEM, 00000000-0000-0000-0000-0000000000d1, null, null, {1,2,3,4,5,6,7}, 10:00:00, 11:00:00, null, null, {DINE_IN,TAKEAWAY,DELIVERY}, PRICE_OVERRIDE, null, null, 0, t, 2026-11-27 16:23:08.832042+00, 2026-11-27 16:23:08.832042+00).
+--- FAIL expected: PERCENT_OFF with a price
+ERROR:  new row for relation "price_rules" violates check constraint "price_rules_check2"
+DETAIL:  Failing row contains (e81805b2-c1f7-4cb5-9bf0-67a00afcfb11, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, Bad, ITEM, 00000000-0000-0000-0000-0000000000d1, null, null, {1,2,3,4,5,6,7}, 10:00:00, 11:00:00, null, null, {DINE_IN,TAKEAWAY,DELIVERY}, PERCENT_OFF, 80.00, 10.00, 0, t, 2026-11-27 16:23:08.832371+00, 2026-11-27 16:23:08.832371+00).
+--- FAIL expected: percent 0
+ERROR:  new row for relation "price_rules" violates check constraint "price_rules_percent_off_check"
+DETAIL:  Failing row contains (f38ec62e-89da-4c93-a3b1-d20720bc2c20, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, Bad, ITEM, 00000000-0000-0000-0000-0000000000d1, null, null, {1,2,3,4,5,6,7}, 10:00:00, 11:00:00, null, null, {DINE_IN,TAKEAWAY,DELIVERY}, PERCENT_OFF, null, 0.00, 0, t, 2026-11-27 16:23:08.832695+00, 2026-11-27 16:23:08.832695+00).
+--- FAIL expected: percent 101
+ERROR:  new row for relation "price_rules" violates check constraint "price_rules_percent_off_check"
+DETAIL:  Failing row contains (790772f5-037b-44e9-a690-f923c6613918, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, Bad, ITEM, 00000000-0000-0000-0000-0000000000d1, null, null, {1,2,3,4,5,6,7}, 10:00:00, 11:00:00, null, null, {DINE_IN,TAKEAWAY,DELIVERY}, PERCENT_OFF, null, 101.00, 0, t, 2026-11-27 16:23:08.832979+00, 2026-11-27 16:23:08.832979+00).
+--- FAIL expected: ITEM scope without an item
+ERROR:  new row for relation "price_rules" violates check constraint "price_rules_check3"
+DETAIL:  Failing row contains (cfe2c0de-6a3c-4895-b01d-a1c084524bf8, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, Bad, ITEM, null, null, null, {1,2,3,4,5,6,7}, 10:00:00, 11:00:00, null, null, {DINE_IN,TAKEAWAY,DELIVERY}, PRICE_OVERRIDE, 80.00, null, 0, t, 2026-11-27 16:23:08.833245+00, 2026-11-27 16:23:08.833245+00).
+--- FAIL expected: ITEM scope that also names a category
+ERROR:  new row for relation "price_rules" violates check constraint "price_rules_check3"
+DETAIL:  Failing row contains (41b84bb7-f1ad-4ac8-b672-8d2d189f17b0, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, Bad, ITEM, 00000000-0000-0000-0000-0000000000d1, null, 00000000-0000-0000-0000-0000000000c1, {1,2,3,4,5,6,7}, 10:00:00, 11:00:00, null, null, {DINE_IN,TAKEAWAY,DELIVERY}, PRICE_OVERRIDE, 80.00, null, 0, t, 2026-11-27 16:23:08.833492+00, 2026-11-27 16:23:08.833492+00).
+--- FAIL expected: CATEGORY scope with a price override
+ERROR:  new row for relation "price_rules" violates check constraint "price_rules_check4"
+DETAIL:  Failing row contains (87125dbc-2906-4cce-8a7f-ef4e8e19573e, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, Bad, CATEGORY, null, null, 00000000-0000-0000-0000-0000000000c1, {1,2,3,4,5,6,7}, 10:00:00, 11:00:00, null, null, {DINE_IN,TAKEAWAY,DELIVERY}, PRICE_OVERRIDE, 80.00, null, 0, t, 2026-11-27 16:23:08.833779+00, 2026-11-27 16:23:08.833779+00).
+--- FAIL expected: valid_to before valid_from
+ERROR:  new row for relation "price_rules" violates check constraint "price_rules_check1"
+DETAIL:  Failing row contains (d0b4b9db-cf96-42d4-943f-489e8cc38954, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, Bad, ITEM, 00000000-0000-0000-0000-0000000000d1, null, null, {1,2,3,4,5,6,7}, 10:00:00, 11:00:00, 2026-12-31, 2026-12-01, {DINE_IN,TAKEAWAY,DELIVERY}, PRICE_OVERRIDE, 80.00, null, 0, t, 2026-11-27 16:23:08.834119+00, 2026-11-27 16:23:08.834119+00).
+--- FAIL expected: priority 1001
+ERROR:  new row for relation "price_rules" violates check constraint "price_rules_priority_check"
+DETAIL:  Failing row contains (d3a29d55-a6ac-4e05-b50c-5586ed0b0844, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, Bad, ITEM, 00000000-0000-0000-0000-0000000000d1, null, null, {1,2,3,4,5,6,7}, 10:00:00, 11:00:00, null, null, {DINE_IN,TAKEAWAY,DELIVERY}, PRICE_OVERRIDE, 80.00, null, 1001, t, 2026-11-27 16:23:08.834452+00, 2026-11-27 16:23:08.834452+00).
+--- FAIL expected: unknown order type
+ERROR:  new row for relation "price_rules" violates check constraint "price_rules_order_types_check"
+DETAIL:  Failing row contains (da721feb-0c7a-4856-a698-6975e15bba0d, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, Bad, ITEM, 00000000-0000-0000-0000-0000000000d1, null, null, {1,2,3,4,5,6,7}, 10:00:00, 11:00:00, null, null, {DRIVE_THRU}, PRICE_OVERRIDE, 80.00, null, 0, t, 2026-11-27 16:23:08.834823+00, 2026-11-27 16:23:08.834823+00).
+--- FAIL expected: negative override price
+ERROR:  new row for relation "price_rules" violates check constraint "price_rules_price_check"
+DETAIL:  Failing row contains (2e83274b-3582-4f9e-99d1-c58adfb85a39, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, Bad, ITEM, 00000000-0000-0000-0000-0000000000d1, null, null, {1,2,3,4,5,6,7}, 10:00:00, 11:00:00, null, null, {DINE_IN,TAKEAWAY,DELIVERY}, PRICE_OVERRIDE, -1.00, null, 0, t, 2026-11-27 16:23:08.835094+00, 2026-11-27 16:23:08.835094+00).
+--- OK expected: override price 0 (free item during a promotion)
+INSERT 0 1
+=== 6 order lines: open items, combos, kitchen status
+--- OK expected: open item (no menu item, source OPEN_ITEM)
+INSERT 0 1
+--- FAIL expected: no menu item but not flagged open
+ERROR:  new row for relation "order_items" violates check constraint "order_items_open_item_shape"
+DETAIL:  Failing row contains (f90cdbc4-697d-4822-bcfd-f031e66e16ae, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000e1, null, null, Ghost, 10.00, 1.000, null, null, null, ACTIVE, null, null, 2026-11-27 16:23:08.838417+00, f, LIST, null, null, null, NONE, null, null, NEW, null, null, null).
+--- FAIL expected: open item that also points at a menu item
+ERROR:  new row for relation "order_items" violates check constraint "order_items_open_item_shape"
+DETAIL:  Failing row contains (dc40061f-cadc-49a6-8884-9aa8ca2b314c, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000e1, 00000000-0000-0000-0000-0000000000d1, null, X, 10.00, 1.000, null, null, null, ACTIVE, null, null, 2026-11-27 16:23:08.838746+00, t, OPEN_ITEM, null, null, null, NONE, null, null, NEW, null, null, null).
+--- FAIL expected: open item with price source LIST
+ERROR:  new row for relation "order_items" violates check constraint "order_items_open_item_source"
+DETAIL:  Failing row contains (9c07ad12-e7e7-4294-b974-001d64fdd114, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000e1, null, null, X, 10.00, 1.000, null, null, null, ACTIVE, null, null, 2026-11-27 16:23:08.839068+00, t, LIST, null, null, null, NONE, null, null, NEW, null, null, null).
+--- FAIL expected: unknown price source
+ERROR:  new row for relation "order_items" violates check constraint "order_items_price_source_check"
+DETAIL:  Failing row contains (bd198c2d-d5b8-44eb-9939-3dcb185d753c, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000e1, 00000000-0000-0000-0000-0000000000d1, null, X, 10.00, 1.000, null, null, null, ACTIVE, null, null, 2026-11-27 16:23:08.839298+00, f, COUPON, null, null, null, NONE, null, null, NEW, null, null, null).
+--- OK expected: combo header
+INSERT 0 1
+--- OK expected: combo component with allocated amount
+INSERT 0 1
+--- FAIL expected: component without a parent
+ERROR:  new row for relation "order_items" violates check constraint "order_items_combo_shape"
+DETAIL:  Failing row contains (831311ca-cd59-4185-84c8-77503690afaf, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000e1, 00000000-0000-0000-0000-0000000000d1, null, X, 0.00, 1.000, null, null, null, ACTIVE, null, null, 2026-11-27 16:23:08.842363+00, f, COMBO, null, null, null, COMPONENT, null, 80.00, NEW, null, null, null).
+--- FAIL expected: component without an allocated amount
+ERROR:  new row for relation "order_items" violates check constraint "order_items_combo_shape"
+DETAIL:  Failing row contains (a4b58518-895b-46a7-92ff-c060ebc2f92c, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000e1, 00000000-0000-0000-0000-0000000000d1, null, X, 0.00, 1.000, null, null, null, ACTIVE, null, null, 2026-11-27 16:23:08.842713+00, f, COMBO, null, null, null, COMPONENT, 00000000-0000-0000-0000-0000000000b5, null, NEW, null, null, null).
+--- FAIL expected: plain line carrying a parent
+ERROR:  new row for relation "order_items" violates check constraint "order_items_combo_shape"
+DETAIL:  Failing row contains (7eeb7b5b-fea0-4ec2-b591-719aa0c73fdd, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000e1, 00000000-0000-0000-0000-0000000000d1, null, X, 10.00, 1.000, null, null, null, ACTIVE, null, null, 2026-11-27 16:23:08.842942+00, f, LIST, null, null, null, NONE, 00000000-0000-0000-0000-0000000000b5, null, NEW, null, null, null).
+--- FAIL expected: header carrying a fixed amount
+ERROR:  new row for relation "order_items" violates check constraint "order_items_combo_shape"
+DETAIL:  Failing row contains (9606ea7b-da60-4aa1-ae90-9ec6b26a404f, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000e1, 00000000-0000-0000-0000-0000000000d3, null, X, 10.00, 1.000, null, null, null, ACTIVE, null, null, 2026-11-27 16:23:08.843159+00, f, LIST, null, null, null, HEADER, null, 5.00, NEW, null, null, null).
+--- FAIL expected: negative allocated amount
+ERROR:  new row for relation "order_items" violates check constraint "order_items_fixed_line_amount_check"
+DETAIL:  Failing row contains (4b715b4c-8789-4b85-b5f6-53d7e11d685a, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000e1, 00000000-0000-0000-0000-0000000000d1, null, X, 0.00, 1.000, null, null, null, ACTIVE, null, null, 2026-11-27 16:23:08.84333+00, f, LIST, null, null, null, COMPONENT, 00000000-0000-0000-0000-0000000000b5, -1.00, NEW, null, null, null).
+--- FAIL expected: kitchen status PREPARING before any KOT
+ERROR:  new row for relation "order_items" violates check constraint "order_items_kitchen_only_after_kot"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000b1, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000e1, 00000000-0000-0000-0000-0000000000d1, null, Item1, 100.00, 2.000, null, null, null, ACTIVE, null, null, 2026-11-27 16:23:08.676114+00, f, LIST, null, null, null, NONE, null, null, PREPARING, null, null, null).
+--- OK expected: attach the line to the KOT
+UPDATE 3
+--- FAIL expected: NEW -> SERVED skips the kitchen
+ERROR:  ILLEGAL_KITCHEN_TRANSITION NEW -> SERVED
+CONTEXT:  PL/pgSQL function fn_order_items_kitchen_transition() line 7 at RAISE
+--- OK expected: NEW -> PREPARING
+UPDATE 1
+--- OK expected: PREPARING -> NEW (recall)
+UPDATE 1
+--- OK expected: NEW -> READY (bump straight to ready)
+UPDATE 1
+--- FAIL expected: READY -> NEW (only one step back)
+ERROR:  ILLEGAL_KITCHEN_TRANSITION READY -> NEW
+CONTEXT:  PL/pgSQL function fn_order_items_kitchen_transition() line 7 at RAISE
+--- OK expected: READY -> SERVED
+UPDATE 1
+--- FAIL expected: SERVED -> NEW
+ERROR:  ILLEGAL_KITCHEN_TRANSITION SERVED -> NEW
+CONTEXT:  PL/pgSQL function fn_order_items_kitchen_transition() line 7 at RAISE
+--- FAIL expected: SERVED -> PREPARING
+ERROR:  ILLEGAL_KITCHEN_TRANSITION SERVED -> PREPARING
+CONTEXT:  PL/pgSQL function fn_order_items_kitchen_transition() line 7 at RAISE
+--- OK expected: SERVED -> READY (recall)
+UPDATE 1
+--- OK expected: READY -> PREPARING (recall)
+UPDATE 1
+--- FAIL expected: PREPARING -> SERVED
+ERROR:  ILLEGAL_KITCHEN_TRANSITION PREPARING -> SERVED
+CONTEXT:  PL/pgSQL function fn_order_items_kitchen_transition() line 7 at RAISE
+--- FAIL expected: unknown kitchen status
+ERROR:  ILLEGAL_KITCHEN_TRANSITION PREPARING -> COOKING
+CONTEXT:  PL/pgSQL function fn_order_items_kitchen_transition() line 7 at RAISE
+--- OK expected: same status written again is not a transition
+UPDATE 1
+=== 7 cashier shifts and cash movements
+--- OK expected: open shift for cashier 1 on device D1
+INSERT 0 1
+--- FAIL expected: same cashier opens a second shift
+ERROR:  duplicate key value violates unique constraint "ux_shift_one_open_per_cashier"
+DETAIL:  Key (cashier_id)=(00000000-0000-0000-0000-0000000000f3) already exists.
+--- FAIL expected: another cashier on the same device
+ERROR:  duplicate key value violates unique constraint "ux_shift_one_open_per_device"
+DETAIL:  Key (device_id)=(00000000-0000-0000-0000-00000000dd01) already exists.
+--- OK expected: another cashier on another device
+INSERT 0 1
+--- FAIL expected: negative opening float
+ERROR:  new row for relation "cashier_shifts" violates check constraint "cashier_shifts_opening_float_check"
+DETAIL:  Failing row contains (a44e32ae-8039-4d00-8f73-9b51d1287f60, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, null, 00000000-0000-0000-0000-0000000000f2, 2026-11-23, OPEN, 2026-11-27 16:23:08.857696+00, -1.00, null, null, null, null, null, null, null).
+--- FAIL expected: OPEN shift already carrying a counted amount
+ERROR:  new row for relation "cashier_shifts" violates check constraint "cashier_shifts_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000005a1, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-00000000dd01, 00000000-0000-0000-0000-0000000000f3, 2026-11-23, OPEN, 2026-11-27 16:23:08.8526+00, 2000.00, null, 100.00, null, null, null, null, null).
+--- FAIL expected: CLOSED without counted cash
+ERROR:  new row for relation "cashier_shifts" violates check constraint "cashier_shifts_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000005a1, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-00000000dd01, 00000000-0000-0000-0000-0000000000f3, 2026-11-23, CLOSED, 2026-11-27 16:23:08.8526+00, 2000.00, 2026-11-27 16:23:08.858615+00, null, null, null, 00000000-0000-0000-0000-0000000000f2, null, null).
+--- FAIL expected: variance not equal counted - expected
+ERROR:  new row for relation "cashier_shifts" violates check constraint "cashier_shifts_check1"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000005a1, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-00000000dd01, 00000000-0000-0000-0000-0000000000f3, 2026-11-23, CLOSED, 2026-11-27 16:23:08.8526+00, 2000.00, 2026-11-27 16:23:08.8589+00, 2100.00, 2000.00, 50.00, 00000000-0000-0000-0000-0000000000f2, null, null).
+--- FAIL expected: handover to the same cashier
+ERROR:  new row for relation "cashier_shifts" violates check constraint "cashier_shifts_check2"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000005a1, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-00000000dd01, 00000000-0000-0000-0000-0000000000f3, 2026-11-23, OPEN, 2026-11-27 16:23:08.8526+00, 2000.00, null, null, null, null, null, 00000000-0000-0000-0000-0000000000f3, null).
+--- OK expected: cash movement PAY_IN
+INSERT 0 1
+--- OK expected: cash movement DROP
+INSERT 0 1
+--- FAIL expected: movement amount 0
+ERROR:  new row for relation "cash_movements" violates check constraint "cash_movements_amount_check"
+DETAIL:  Failing row contains (081c1ec6-b061-4e46-a8f2-fb8d4967312a, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-0000000005a1, PAY_OUT, 0.00, X, null, 00000000-0000-0000-0000-0000000000f2, 2026-11-27 16:23:08.861646+00).
+--- FAIL expected: movement kind REFUND
+ERROR:  new row for relation "cash_movements" violates check constraint "cash_movements_kind_check"
+DETAIL:  Failing row contains (1f4cb318-60a6-4d6e-8f9d-6dc876b10db3, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-0000000005a1, REFUND, 10.00, X, null, 00000000-0000-0000-0000-0000000000f2, 2026-11-27 16:23:08.861914+00).
+--- FAIL expected: movement without a reason
+ERROR:  new row for relation "cash_movements" violates check constraint "cash_movements_reason_code_check"
+DETAIL:  Failing row contains (af824d4e-1f9d-4b78-9e25-950da5c81dd5, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-0000000005a1, PAY_OUT, 10.00,   , null, 00000000-0000-0000-0000-0000000000f2, 2026-11-27 16:23:08.862107+00).
+--- FAIL expected: cash movement edited
+ERROR:  APPEND_ONLY_TABLE cash_movements cannot be UPDATE
+CONTEXT:  PL/pgSQL function fn_append_only() line 2 at RAISE
+--- FAIL expected: cash movement deleted
+ERROR:  APPEND_ONLY_TABLE cash_movements cannot be DELETE
+CONTEXT:  PL/pgSQL function fn_append_only() line 2 at RAISE
+--- OK expected: day closing row opened
+INSERT 0 1
+--- FAIL expected: day close while shifts are open
+ERROR:  OPEN_SHIFTS_EXIST
+CONTEXT:  PL/pgSQL function fn_day_close_needs_closed_shifts() line 5 at RAISE
+--- OK expected: close shift 1 (counted 1500, expected 1500)
+UPDATE 1
+--- FAIL expected: day close while shift 2 is still open
+ERROR:  OPEN_SHIFTS_EXIST
+CONTEXT:  PL/pgSQL function fn_day_close_needs_closed_shifts() line 5 at RAISE
+--- OK expected: close shift 2 with a shortage
+UPDATE 1
+--- OK expected: day close once all shifts are closed
+UPDATE 1
+--- OK expected: the cashier can open a new shift after closing
+INSERT 0 1
+=== 8 customer ledger
+--- OK expected: CHARGE for an on-account bill
+INSERT 0 1
+--- FAIL expected: CHARGE with a negative amount
+ERROR:  new row for relation "customer_ledger" violates check constraint "customer_ledger_check"
+DETAIL:  Failing row contains (54ee5422-4aa6-440e-ab94-45c6d75bd649, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000b9, 00000000-0000-0000-0000-0000000000a1, CHARGE, -5.00, 00000000-0000-0000-0000-000000000b11, null, null, null, null, null, null, 2026-11-23, 00000000-0000-0000-0000-0000000000f3, 2026-11-27 16:23:08.870665+00).
+--- FAIL expected: CHARGE without a bill
+ERROR:  new row for relation "customer_ledger" violates check constraint "customer_ledger_check"
+DETAIL:  Failing row contains (d2c974e7-2fdc-45e0-99ff-52c511568c65, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000b9, 00000000-0000-0000-0000-0000000000a1, CHARGE, 5.00, null, null, null, null, null, null, null, 2026-11-23, 00000000-0000-0000-0000-0000000000f3, 2026-11-27 16:23:08.871003+00).
+--- OK expected: PAYMENT settles part of the dues (cash, in shift 3)
+INSERT 0 1
+--- FAIL expected: PAYMENT with a positive amount
+ERROR:  new row for relation "customer_ledger" violates check constraint "customer_ledger_check1"
+DETAIL:  Failing row contains (a1862c39-b406-4c7e-bf66-34f48b659dd2, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000b9, 00000000-0000-0000-0000-0000000000a1, PAYMENT, 100.00, null, null, null, CASH, null, null, null, 2026-11-24, 00000000-0000-0000-0000-0000000000f3, 2026-11-27 16:23:08.872191+00).
+--- FAIL expected: PAYMENT without a method
+ERROR:  new row for relation "customer_ledger" violates check constraint "customer_ledger_check1"
+DETAIL:  Failing row contains (5674f5d4-30d3-470f-817a-a1d36f801f2d, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000b9, 00000000-0000-0000-0000-0000000000a1, PAYMENT, -100.00, null, null, null, null, null, null, null, 2026-11-24, 00000000-0000-0000-0000-0000000000f3, 2026-11-27 16:23:08.872479+00).
+--- FAIL expected: PAYMENT with method ON_ACCOUNT
+ERROR:  new row for relation "customer_ledger" violates check constraint "customer_ledger_method_check"
+DETAIL:  Failing row contains (4c521018-2732-4f36-ab83-13338b8b663b, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000b9, 00000000-0000-0000-0000-0000000000a1, PAYMENT, -100.00, null, null, null, ON_ACCOUNT, null, null, null, 2026-11-24, 00000000-0000-0000-0000-0000000000f3, 2026-11-27 16:23:08.872734+00).
+--- FAIL expected: method on a CHARGE entry
+ERROR:  new row for relation "customer_ledger" violates check constraint "customer_ledger_check4"
+DETAIL:  Failing row contains (12b2a8e5-5157-4608-b861-3b45eaa5ae67, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000b9, 00000000-0000-0000-0000-0000000000a1, CHARGE, 5.00, 00000000-0000-0000-0000-000000000b11, null, null, CASH, null, null, null, 2026-11-24, 00000000-0000-0000-0000-0000000000f3, 2026-11-27 16:23:08.87296+00).
+--- FAIL expected: CREDIT_NOTE entry without a credit note
+ERROR:  new row for relation "customer_ledger" violates check constraint "customer_ledger_check2"
+DETAIL:  Failing row contains (6ed88864-437b-47ad-be04-3129df8522f7, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000b9, 00000000-0000-0000-0000-0000000000a1, CREDIT_NOTE, -10.00, null, null, null, null, null, null, null, 2026-11-24, 00000000-0000-0000-0000-0000000000f3, 2026-11-27 16:23:08.873173+00).
+--- FAIL expected: ADJUSTMENT with a 3-letter reason
+ERROR:  new row for relation "customer_ledger" violates check constraint "customer_ledger_check3"
+DETAIL:  Failing row contains (9985e89f-546e-472b-a0e0-1b560c36e3c5, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000b9, 00000000-0000-0000-0000-0000000000a1, ADJUSTMENT, -10.00, null, null, null, null, null, abc, null, 2026-11-24, 00000000-0000-0000-0000-0000000000f2, 2026-11-27 16:23:08.873363+00).
+--- FAIL expected: ADJUSTMENT without a reason
+ERROR:  new row for relation "customer_ledger" violates check constraint "customer_ledger_check3"
+DETAIL:  Failing row contains (6b0b360b-2360-4dce-90a2-46c2cac04856, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000b9, 00000000-0000-0000-0000-0000000000a1, ADJUSTMENT, -10.00, null, null, null, null, null, null, null, 2026-11-24, 00000000-0000-0000-0000-0000000000f2, 2026-11-27 16:23:08.873579+00).
+--- OK expected: ADJUSTMENT write-off with a reason
+INSERT 0 1
+--- FAIL expected: ledger amount 0
+ERROR:  new row for relation "customer_ledger" violates check constraint "customer_ledger_amount_check"
+DETAIL:  Failing row contains (6eaa8103-770f-44ab-9bf1-0673d523effd, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000b9, 00000000-0000-0000-0000-0000000000a1, ADJUSTMENT, 0.00, null, null, null, null, null, zero adjustment, null, 2026-11-24, 00000000-0000-0000-0000-0000000000f2, 2026-11-27 16:23:08.874693+00).
+--- FAIL expected: unknown entry type
+ERROR:  new row for relation "customer_ledger" violates check constraint "customer_ledger_entry_type_check"
+DETAIL:  Failing row contains (b0da921f-e2c4-46e8-9915-3e86506d5c20, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000b9, 00000000-0000-0000-0000-0000000000a1, REFUND, -10.00, null, null, null, null, null, null, null, 2026-11-24, 00000000-0000-0000-0000-0000000000f2, 2026-11-27 16:23:08.874989+00).
+--- FAIL expected: ledger entry edited
+ERROR:  APPEND_ONLY_TABLE customer_ledger cannot be UPDATE
+CONTEXT:  PL/pgSQL function fn_append_only() line 2 at RAISE
+--- FAIL expected: ledger entry deleted
+ERROR:  APPEND_ONLY_TABLE customer_ledger cannot be DELETE
+CONTEXT:  PL/pgSQL function fn_append_only() line 2 at RAISE
+--- FAIL expected: negative credit limit
+ERROR:  new row for relation "customers" violates check constraint "customers_credit_limit_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000b9, 00000000-0000-0000-0000-000000000001, Cust A, 9000000001, null, null, 2026-11-27 16:23:08.672689+00, 2026-11-27 16:23:08.672689+00, -1.00, null, null).
+--- OK expected: balance of customer A is the sum of entries (263-100-13 = 150)
+DO
+=== 9 coupons
+--- FAIL expected: code differing only in case
+ERROR:  duplicate key value violates unique constraint "ux_coupons_code"
+DETAIL:  Key (tenant_id, lower(code))=(00000000-0000-0000-0000-000000000001, welcome10) already exists.
+--- FAIL expected: code too short
+ERROR:  new row for relation "coupons" violates check constraint "coupons_code_check"
+DETAIL:  Failing row contains (5a9ee455-cca1-4def-983e-1049b8039a44, 00000000-0000-0000-0000-000000000001, null, AB, null, PERCENT, 5.00, null, 0.00, null, null, {1,2,3,4,5,6,7}, {DINE_IN,TAKEAWAY,DELIVERY}, null, null, null, f, t, 2026-11-27 16:23:08.877438+00, 2026-11-27 16:23:08.877438+00).
+--- FAIL expected: code with a space
+ERROR:  new row for relation "coupons" violates check constraint "coupons_code_check"
+DETAIL:  Failing row contains (3760049b-1365-4684-95bd-b03053f506e9, 00000000-0000-0000-0000-000000000001, null, SAVE 5, null, PERCENT, 5.00, null, 0.00, null, null, {1,2,3,4,5,6,7}, {DINE_IN,TAKEAWAY,DELIVERY}, null, null, null, f, t, 2026-11-27 16:23:08.877892+00, 2026-11-27 16:23:08.877892+00).
+--- FAIL expected: percent 101
+ERROR:  new row for relation "coupons" violates check constraint "coupons_check"
+DETAIL:  Failing row contains (54233c9d-57c6-4cf9-b8bc-c1ed66ee6dbc, 00000000-0000-0000-0000-000000000001, null, OVER100, null, PERCENT, 101.00, null, 0.00, null, null, {1,2,3,4,5,6,7}, {DINE_IN,TAKEAWAY,DELIVERY}, null, null, null, f, t, 2026-11-27 16:23:08.878289+00, 2026-11-27 16:23:08.878289+00).
+--- FAIL expected: value 0
+ERROR:  new row for relation "coupons" violates check constraint "coupons_value_check"
+DETAIL:  Failing row contains (1c2eb65e-9b06-41c5-ace6-b86f9f55caaa, 00000000-0000-0000-0000-000000000001, null, ZERO0, null, AMOUNT, 0.00, null, 0.00, null, null, {1,2,3,4,5,6,7}, {DINE_IN,TAKEAWAY,DELIVERY}, null, null, null, f, t, 2026-11-27 16:23:08.878672+00, 2026-11-27 16:23:08.878672+00).
+--- FAIL expected: unknown discount type
+ERROR:  new row for relation "coupons" violates check constraint "coupons_discount_type_check"
+DETAIL:  Failing row contains (9c434042-953e-4da1-917b-0317013a4e21, 00000000-0000-0000-0000-000000000001, null, BOGO1, null, BOGO, 1.00, null, 0.00, null, null, {1,2,3,4,5,6,7}, {DINE_IN,TAKEAWAY,DELIVERY}, null, null, null, f, t, 2026-11-27 16:23:08.879028+00, 2026-11-27 16:23:08.879028+00).
+--- FAIL expected: stackable coupon (not in v1)
+ERROR:  new row for relation "coupons" violates check constraint "coupons_stackable_check"
+DETAIL:  Failing row contains (a9db0a21-cfa6-45ba-bfe2-ea5dc86d4263, 00000000-0000-0000-0000-000000000001, null, STACK5, null, PERCENT, 5.00, null, 0.00, null, null, {1,2,3,4,5,6,7}, {DINE_IN,TAKEAWAY,DELIVERY}, null, null, null, t, t, 2026-11-27 16:23:08.879418+00, 2026-11-27 16:23:08.879418+00).
+--- FAIL expected: valid_to not after valid_from
+ERROR:  new row for relation "coupons" violates check constraint "coupons_check1"
+DETAIL:  Failing row contains (6e1213f2-95ca-4016-a386-8aaaad45dae2, 00000000-0000-0000-0000-000000000001, null, BADRANGE, null, PERCENT, 5.00, null, 0.00, 2026-12-02 00:00:00+00, 2026-12-01 00:00:00+00, {1,2,3,4,5,6,7}, {DINE_IN,TAKEAWAY,DELIVERY}, null, null, null, f, t, 2026-11-27 16:23:08.879772+00, 2026-11-27 16:23:08.879772+00).
+--- FAIL expected: usage limit 0
+ERROR:  new row for relation "coupons" violates check constraint "coupons_usage_limit_total_check"
+DETAIL:  Failing row contains (a0c8a3cf-205d-4d05-b5bf-7399f185cdf4, 00000000-0000-0000-0000-000000000001, null, LIM0, null, PERCENT, 5.00, null, 0.00, null, null, {1,2,3,4,5,6,7}, {DINE_IN,TAKEAWAY,DELIVERY}, 0, null, null, f, t, 2026-11-27 16:23:08.880212+00, 2026-11-27 16:23:08.880212+00).
+--- FAIL expected: max discount 0
+ERROR:  new row for relation "coupons" violates check constraint "coupons_max_discount_check"
+DETAIL:  Failing row contains (8e144af4-8ea5-4399-a1f8-6c0381201fd2, 00000000-0000-0000-0000-000000000001, null, CAP0, null, PERCENT, 5.00, 0.00, 0.00, null, null, {1,2,3,4,5,6,7}, {DINE_IN,TAKEAWAY,DELIVERY}, null, null, null, f, t, 2026-11-27 16:23:08.880563+00, 2026-11-27 16:23:08.880563+00).
+--- FAIL expected: negative min bill
+ERROR:  new row for relation "coupons" violates check constraint "coupons_min_bill_check"
+DETAIL:  Failing row contains (f4d53fed-b2fa-4127-bfd4-1b5e818de31c, 00000000-0000-0000-0000-000000000001, null, MINNEG, null, PERCENT, 5.00, null, -1.00, null, null, {1,2,3,4,5,6,7}, {DINE_IN,TAKEAWAY,DELIVERY}, null, null, null, f, t, 2026-11-27 16:23:08.880942+00, 2026-11-27 16:23:08.880942+00).
+--- FAIL expected: empty weekdays
+ERROR:  new row for relation "coupons" violates check constraint "coupons_weekdays_check"
+DETAIL:  Failing row contains (349ad594-a232-465d-b51d-777ad09261d9, 00000000-0000-0000-0000-000000000001, null, NODAYS, null, PERCENT, 5.00, null, 0.00, null, null, {}, {DINE_IN,TAKEAWAY,DELIVERY}, null, null, null, f, t, 2026-11-27 16:23:08.881223+00, 2026-11-27 16:23:08.881223+00).
+--- OK expected: flat coupon with limits
+INSERT 0 1
+--- OK expected: coupon limited to one outlet
+INSERT 0 1
+=== 10 bills: NC, packaging, coupon, line types
+--- OK expected: NC bill (grand 0, reason, liability recorded)
+INSERT 0 1
+--- FAIL expected: NC bill with a payable grand total
+ERROR:  new row for relation "bills" violates check constraint "bills_nc_shape"
+DETAIL:  Failing row contains (e3af733c-be45-4e19-8e8f-8e2fb37966ca, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-0000000000e2, B, 2026-27, 22, B-22, GENERATED, f, INR, 100.00, null, null, 0.00, null, 0.00, 0.00, 100.00, 0.00, 100.00, 0.00, null, null, 00000000-0000-0000-0000-0000000000f2, 2026-11-27 16:23:08.884307+00, null, null, null, null, 0, 0.00, null, f, null, null, t, OWNER_GUEST, 0.00, 0.00, null, null, null, null, null, null, null, null, null, null, null, null).
+--- FAIL expected: NC bill without a reason code
+ERROR:  new row for relation "bills" violates check constraint "bills_nc_shape"
+DETAIL:  Failing row contains (78edabad-ac37-4626-8d46-49ae84cf1cdb, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-0000000000e2, B, 2026-27, 23, B-23, GENERATED, f, INR, 100.00, null, null, 0.00, null, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, null, null, 00000000-0000-0000-0000-0000000000f2, 2026-11-27 16:23:08.884696+00, null, null, null, null, 0, 0.00, null, f, null, null, t, null, 0.00, 0.00, null, null, null, null, null, null, null, null, null, null, null, null).
+--- FAIL expected: NC bill with blank reason code
+ERROR:  new row for relation "bills" violates check constraint "bills_nc_shape"
+DETAIL:  Failing row contains (1524cc50-d37f-4702-9b7c-cb87cafa05bc, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-0000000000e2, B, 2026-27, 24, B-24, GENERATED, f, INR, 100.00, null, null, 0.00, null, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, null, null, 00000000-0000-0000-0000-0000000000f2, 2026-11-27 16:23:08.884986+00, null, null, null, null, 0, 0.00, null, f, null, null, t,   , 0.00, 0.00, null, null, null, null, null, null, null, null, null, null, null, null).
+--- FAIL expected: NC bill carrying packaging charge
+ERROR:  new row for relation "bills" violates check constraint "bills_nc_no_extras"
+DETAIL:  Failing row contains (95bacfa6-8c19-40d6-958a-338dca0c6643, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-0000000000e2, B, 2026-27, 25, B-25, GENERATED, f, INR, 100.00, null, null, 0.00, null, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, null, null, 00000000-0000-0000-0000-0000000000f2, 2026-11-27 16:23:08.885306+00, null, null, null, null, 0, 0.00, null, f, null, null, t, OWNER_GUEST, 0.00, 10.00, FLAT, null, null, null, null, null, null, null, null, null, null, null).
+--- FAIL expected: NC bill carrying service charge
+ERROR:  new row for relation "bills" violates check constraint "bills_nc_no_extras"
+DETAIL:  Failing row contains (1f48580f-d831-45b8-89c9-a05cfa68c7b0, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-0000000000e2, B, 2026-27, 26, B-26, GENERATED, f, INR, 100.00, null, null, 0.00, null, 5.00, 0.00, 0.00, 0.00, 0.00, 0.00, null, null, 00000000-0000-0000-0000-0000000000f2, 2026-11-27 16:23:08.885558+00, null, null, null, null, 0, 0.00, null, f, null, null, t, OWNER_GUEST, 0.00, 0.00, null, null, null, null, null, null, null, null, null, null, null, null).
+--- FAIL expected: tax liability on a normal bill
+ERROR:  new row for relation "bills" violates check constraint "bills_nc_liability_only_nc"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-000000000b12, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-0000000000e2, B, 2026-27, 2, B-2, GENERATED, f, INR, 100.00, null, null, 0.00, null, 0.00, 0.00, 100.00, 0.00, 100.00, 0.00, null, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:08.677454+00, null, null, null, null, 0, 0.00, null, f, null, null, f, null, 5.00, 0.00, null, null, null, null, null, null, null, null, null, null, null, null).
+--- FAIL expected: negative tax liability
+ERROR:  new row for relation "bills" violates check constraint "bills_nc_tax_liability_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-000000000b21, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-0000000000e2, B, 2026-27, 21, B-21, GENERATED, f, INR, 100.00, PERCENT, 100.00, 100.00, null, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, null, null, 00000000-0000-0000-0000-0000000000f2, 2026-11-27 16:23:08.883235+00, null, null, null, null, 0, 0.00, null, f, null, null, t, OWNER_GUEST, -1.00, 0.00, null, null, null, null, null, null, null, null, null, null, null, null).
+--- FAIL expected: coupon on a bill without a discount
+ERROR:  new row for relation "bills" violates check constraint "bills_coupon_has_discount"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-000000000b12, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-0000000000e2, B, 2026-27, 2, B-2, GENERATED, f, INR, 100.00, null, null, 0.00, null, 0.00, 0.00, 100.00, 0.00, 100.00, 0.00, null, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:08.677454+00, null, null, null, null, 0, 0.00, null, f, null, null, f, null, 0.00, 0.00, null, 00000000-0000-0000-0000-00000000cc01, WELCOME10, null, null, null, null, null, null, null, null, null).
+--- FAIL expected: coupon id without the code snapshot
+ERROR:  new row for relation "bills" violates check constraint "bills_coupon_has_discount"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-000000000b12, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-0000000000e2, B, 2026-27, 2, B-2, GENERATED, f, INR, 100.00, null, null, 10.00, null, 0.00, 0.00, 100.00, 0.00, 100.00, 0.00, null, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:08.677454+00, null, null, null, null, 0, 0.00, null, f, null, null, f, null, 0.00, 0.00, null, 00000000-0000-0000-0000-00000000cc01, null, null, null, null, null, null, null, null, null, null).
+--- OK expected: coupon with discount and code snapshot
+UPDATE 1
+--- FAIL expected: packaging charge without a kind
+ERROR:  new row for relation "bills" violates check constraint "bills_packaging_kind_set"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-000000000b13, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-0000000000e3, B, 2026-27, 3, B-3, PAID, f, INR, 100.00, null, null, 0.00, null, 0.00, 0.00, 100.00, 0.00, 100.00, 100.00, null, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:08.677454+00, null, null, null, null, 0, 0.00, null, f, null, null, f, null, 0.00, 10.00, null, null, null, null, null, null, null, null, null, null, null, null).
+--- FAIL expected: packaging kind without a charge
+ERROR:  new row for relation "bills" violates check constraint "bills_packaging_kind_set"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-000000000b13, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-0000000000e3, B, 2026-27, 3, B-3, PAID, f, INR, 100.00, null, null, 0.00, null, 0.00, 0.00, 100.00, 0.00, 100.00, 100.00, null, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:08.677454+00, null, null, null, null, 0, 0.00, null, f, null, null, f, null, 0.00, 0.00, FLAT, null, null, null, null, null, null, null, null, null, null, null).
+--- FAIL expected: unknown packaging kind
+ERROR:  new row for relation "bills" violates check constraint "bills_packaging_kind_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-000000000b13, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-0000000000e3, B, 2026-27, 3, B-3, PAID, f, INR, 100.00, null, null, 0.00, null, 0.00, 0.00, 100.00, 0.00, 100.00, 100.00, null, null, 00000000-0000-0000-0000-0000000000f1, 2026-11-27 16:23:08.677454+00, null, null, null, null, 0, 0.00, null, f, null, null, f, null, 0.00, 10.00, PER_BOX, null, null, null, null, null, null, null, null, null, null, null).
+--- OK expected: FLAT packaging on the first bill of order 3
+UPDATE 1
+--- FAIL expected: FLAT packaging charged again on a split bill of the same order
+ERROR:  duplicate key value violates unique constraint "ux_bills_packaging_flat_once"
+DETAIL:  Key (order_id)=(00000000-0000-0000-0000-0000000000e3) already exists.
+--- OK expected: PER_ITEM packaging on another bill of the same order
+UPDATE 1
+--- OK expected: PACKAGING_CHARGE bill line
+INSERT 0 1
+--- FAIL expected: unknown bill line type
+ERROR:  new row for relation "bill_lines" violates check constraint "bill_lines_line_type_check"
+DETAIL:  Failing row contains (1e1b1050-3950-4aa8-baf5-90be3f78f2bb, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-000000000b13, 10, TIP, null, Tip, 1.000, 10.00, 10.00, 0.00, 10.00, 0.00, 10.00, t, null).
+--- OK expected: DELIVERY_CHARGE line type still accepted
+INSERT 0 1
+=== 11 coupon redemptions
+--- OK expected: redemption of WELCOME10 on bill 2
+INSERT 0 1
+--- FAIL expected: second ACTIVE redemption on the same bill
+ERROR:  duplicate key value violates unique constraint "ux_coupon_one_active_per_bill"
+DETAIL:  Key (bill_id)=(00000000-0000-0000-0000-000000000b12) already exists.
+--- FAIL expected: redemption discount 0
+ERROR:  new row for relation "coupon_redemptions" violates check constraint "coupon_redemptions_discount_amount_check"
+DETAIL:  Failing row contains (a675ca3a-42ee-4a14-bcf9-54fd70ab6726, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-00000000cc01, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000b13, null, 2026-11-23, 0.00, ACTIVE, null, null, 2026-11-27 16:23:08.894119+00).
+--- FAIL expected: ACTIVE redemption carrying a release time
+ERROR:  new row for relation "coupon_redemptions" violates check constraint "coupon_redemptions_check"
+DETAIL:  Failing row contains (35c7ebc2-09a2-4d31-b1f8-de5b167b456d, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-00000000cc01, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000b13, null, 2026-11-23, 5.00, ACTIVE, 2026-11-27 16:23:08.894511+00, null, 2026-11-27 16:23:08.894511+00).
+--- OK expected: FLAT50 first use (limits total 2, customer 1, day 1)
+INSERT 0 1
+--- FAIL expected: per-customer limit 1 reached
+ERROR:  COUPON_LIMIT_CUSTOMER
+CONTEXT:  PL/pgSQL function fn_coupon_redemption_guard() line 14 at RAISE
+--- FAIL expected: per-day limit 1 reached (other customer, same day)
+ERROR:  COUPON_LIMIT_DAY
+CONTEXT:  PL/pgSQL function fn_coupon_redemption_guard() line 18 at RAISE
+--- FAIL expected: coupon with a per-customer limit redeemed without a customer
+ERROR:  COUPON_CUSTOMER_REQUIRED
+CONTEXT:  PL/pgSQL function fn_coupon_redemption_guard() line 12 at RAISE
+--- OK expected: other customer, next day (second of total 2)
+INSERT 0 1
+--- FAIL expected: total limit 2 reached
+ERROR:  COUPON_LIMIT_TOTAL
+CONTEXT:  PL/pgSQL function fn_coupon_redemption_guard() line 9 at RAISE
+--- FAIL expected: release without a reason
+ERROR:  new row for relation "coupon_redemptions" violates check constraint "coupon_redemptions_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000007a2, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-00000000cc02, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000b13, 00000000-0000-0000-0000-0000000000b9, 2026-11-23, 50.00, RELEASED, 2026-11-27 16:23:08.899063+00, null, 2026-11-27 16:23:08.89492+00).
+--- FAIL expected: changing the discount amount of a redemption
+ERROR:  APPEND_ONLY_TABLE coupon_redemptions allows only ACTIVE -> RELEASED
+CONTEXT:  PL/pgSQL function fn_coupon_redemption_immutable() line 8 at RAISE
+--- FAIL expected: moving a redemption to another bill
+ERROR:  APPEND_ONLY_TABLE coupon_redemptions allows only ACTIVE -> RELEASED
+CONTEXT:  PL/pgSQL function fn_coupon_redemption_immutable() line 8 at RAISE
+--- FAIL expected: redemption deleted
+ERROR:  APPEND_ONLY_TABLE coupon_redemptions cannot be DELETE
+CONTEXT:  PL/pgSQL function fn_coupon_redemption_immutable() line 3 at RAISE
+--- OK expected: release with a reason
+UPDATE 1
+--- FAIL expected: RELEASED back to ACTIVE
+ERROR:  APPEND_ONLY_TABLE coupon_redemptions allows only ACTIVE -> RELEASED
+CONTEXT:  PL/pgSQL function fn_coupon_redemption_immutable() line 8 at RAISE
+--- OK expected: the released use is free again (customer A, per-customer limit 1)
+INSERT 0 1
+--- FAIL expected: coupon switched off then redeemed
+UPDATE 1
+ERROR:  COUPON_INACTIVE
+CONTEXT:  PL/pgSQL function fn_coupon_redemption_guard() line 6 at RAISE
+--- OK expected: voiding bill 2 releases its coupon redemption automatically
+UPDATE 1
+DO
+=== 12 payments: ON_ACCOUNT, tips, shifts
+--- FAIL expected: ON_ACCOUNT without a customer
+ERROR:  new row for relation "payments" violates check constraint "payments_on_account_needs_customer"
+DETAIL:  Failing row contains (c72cb07a-d647-4837-9976-5d938afa219c, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000b14, ON_ACCOUNT, 100.00, null, null, SUCCESS, MANUAL, null, null, null, null, null, 00000000-0000-0000-0000-0000000000f3, 2026-11-27 16:23:08.90535+00, null, null, null, null, f, null, null, 0.00, null, null, null).
+--- FAIL expected: ON_ACCOUNT with a tip
+ERROR:  new row for relation "payments" violates check constraint "payments_on_account_no_tip"
+DETAIL:  Failing row contains (6c8c8902-a66d-4291-95d5-346fcb25331a, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000b14, ON_ACCOUNT, 100.00, null, null, SUCCESS, MANUAL, null, null, null, null, null, 00000000-0000-0000-0000-0000000000f3, 2026-11-27 16:23:08.906106+00, null, null, null, null, f, null, null, 10.00, null, 00000000-0000-0000-0000-0000000000b9, null).
+--- FAIL expected: ON_ACCOUNT with tendered cash
+ERROR:  new row for relation "payments" violates check constraint "payments_on_account_no_tender"
+DETAIL:  Failing row contains (f2d09fcd-6c81-4169-8e78-43e8095571b1, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000b14, ON_ACCOUNT, 100.00, 100.00, null, SUCCESS, MANUAL, null, null, null, null, null, 00000000-0000-0000-0000-0000000000f3, 2026-11-27 16:23:08.906448+00, null, null, null, null, f, null, null, 0.00, null, 00000000-0000-0000-0000-0000000000b9, null).
+--- OK expected: ON_ACCOUNT with a customer
+INSERT 0 1
+--- OK expected: cash payment with tip and staff attribution in shift 3
+INSERT 0 1
+--- FAIL expected: negative tip
+ERROR:  new row for relation "payments" violates check constraint "payments_tip_amount_check"
+DETAIL:  Failing row contains (7ff7344e-9eca-457d-9d3b-83c9d3f58c04, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000b13, CARD, 10.00, null, null, SUCCESS, MANUAL, null, null, null, null, null, 00000000-0000-0000-0000-0000000000f3, 2026-11-27 16:23:08.909415+00, null, null, null, null, f, null, null, -1.00, null, null, null).
+--- FAIL expected: unknown payment method
+ERROR:  new row for relation "payments" violates check constraint "payments_method_check"
+DETAIL:  Failing row contains (e0e728f7-5285-4ca2-9851-7d903ef6d3bf, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000b13, CRYPTO, 10.00, null, null, SUCCESS, MANUAL, null, null, null, null, null, 00000000-0000-0000-0000-0000000000f3, 2026-11-27 16:23:08.909888+00, null, null, null, null, f, null, null, 0.00, null, null, null).
+--- OK expected: UPI payment without a shift while shifts are optional
+INSERT 0 1
+--- FAIL expected: payment without a shift once the outlet requires shifts
+UPDATE 1
+ERROR:  SHIFT_REQUIRED
+CONTEXT:  PL/pgSQL function fn_payments_shift_guard() line 5 at RAISE
+--- OK expected: payment with a shift when shifts are required
+INSERT 0 1
+--- FAIL expected: payment pointing at a shift of another outlet
+INSERT 0 1
+ERROR:  SHIFT_OTHER_OUTLET
+CONTEXT:  PL/pgSQL function fn_payments_shift_guard() line 8 at RAISE
+UPDATE 1
+=== 13 credit notes
+--- FAIL expected: credit note on a bill that is not PAID (bill 2 is VOID)
+ERROR:  CREDIT_NOTE_NEEDS_PAID_BILL
+CONTEXT:  PL/pgSQL function fn_credit_note_guard() line 5 at RAISE
+--- OK expected: credit note for 1 of 2 units of line 1 (taxable 100, tax 5)
+INSERT 0 1
+INSERT 0 1
+INSERT 0 2
+--- FAIL expected: credit note number repeated
+ERROR:  duplicate key value violates unique constraint "credit_notes_outlet_id_cn_number_key"
+DETAIL:  Key (outlet_id, cn_number)=(00000000-0000-0000-0000-0000000000a1, CN-2026-27-000001) already exists.
+--- FAIL expected: credit note sequence repeated
+ERROR:  duplicate key value violates unique constraint "credit_notes_outlet_id_series_fiscal_year_cn_seq_key"
+DETAIL:  Key (outlet_id, series, fiscal_year, cn_seq)=(00000000-0000-0000-0000-0000000000a1, CN, 2026-27, 1) already exists.
+--- FAIL expected: series other than CN
+ERROR:  new row for relation "credit_notes" violates check constraint "credit_notes_series_check"
+DETAIL:  Failing row contains (e24c13d7-ac82-469e-ab7b-c26aa0594836, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000b11, B, 2026-27, 5, CN-S, 2026-11-24, X, Another reason, CASH, null, null, null, 1.00, 0.00, 1.00, 0.00, 1.00, 00000000-0000-0000-0000-0000000000f2, 00000000-0000-0000-0000-0000000000f3, 2026-11-27 16:23:08.924952+00).
+--- FAIL expected: grand total not equal to total + round-off
+ERROR:  new row for relation "credit_notes" violates check constraint "credit_notes_check"
+DETAIL:  Failing row contains (bb3f8656-dfe5-44ab-ba9c-56ec09f3ab5b, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000b11, CN, 2026-27, 6, CN-6, 2026-11-24, X, Another reason, CASH, null, null, null, 1.00, 0.00, 1.00, 0.50, 1.00, 00000000-0000-0000-0000-0000000000f2, 00000000-0000-0000-0000-0000000000f3, 2026-11-27 16:23:08.925746+00).
+--- FAIL expected: grand total 0
+ERROR:  new row for relation "credit_notes" violates check constraint "credit_notes_grand_total_check"
+DETAIL:  Failing row contains (20ca85e0-a7b0-4dc5-a04f-baca83005805, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000b11, CN, 2026-27, 7, CN-7, 2026-11-24, X, Another reason, CASH, null, null, null, 0.00, 0.00, 0.40, -0.40, 0.00, 00000000-0000-0000-0000-0000000000f2, 00000000-0000-0000-0000-0000000000f3, 2026-11-27 16:23:08.926513+00).
+--- FAIL expected: reason shorter than 5 characters
+ERROR:  new row for relation "credit_notes" violates check constraint "credit_notes_reason_check"
+DETAIL:  Failing row contains (bb5ee7e9-74ce-49d3-84cc-24df310e8f5c, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000b11, CN, 2026-27, 8, CN-8, 2026-11-24, X, abc, CASH, null, null, null, 1.00, 0.00, 1.00, 0.00, 1.00, 00000000-0000-0000-0000-0000000000f2, 00000000-0000-0000-0000-0000000000f3, 2026-11-27 16:23:08.92721+00).
+--- FAIL expected: ON_ACCOUNT refund without a customer
+ERROR:  new row for relation "credit_notes" violates check constraint "credit_notes_check1"
+DETAIL:  Failing row contains (5d52be68-8017-4620-83df-af02dddf78ac, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000b11, CN, 2026-27, 9, CN-9, 2026-11-24, X, Another reason, ON_ACCOUNT, null, null, null, 1.00, 0.00, 1.00, 0.00, 1.00, 00000000-0000-0000-0000-0000000000f2, 00000000-0000-0000-0000-0000000000f3, 2026-11-27 16:23:08.927927+00).
+--- FAIL expected: unknown refund method
+ERROR:  new row for relation "credit_notes" violates check constraint "credit_notes_refund_method_check"
+DETAIL:  Failing row contains (5d566b5c-21e0-4ed6-81bd-005b30c15764, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000b11, CN, 2026-27, 10, CN-10, 2026-11-24, X, Another reason, CHEQUE, null, null, null, 1.00, 0.00, 1.00, 0.00, 1.00, 00000000-0000-0000-0000-0000000000f2, 00000000-0000-0000-0000-0000000000f3, 2026-11-27 16:23:08.928627+00).
+--- FAIL expected: credit note whose total exceeds what is left on the bill
+ERROR:  REFUND_EXCEEDS_BILL_TOTAL
+CONTEXT:  PL/pgSQL function fn_credit_note_guard() line 8 at RAISE
+--- FAIL expected: credit note on a bill of another outlet id
+ERROR:  CREDIT_NOTE_OTHER_OUTLET
+CONTEXT:  PL/pgSQL function fn_credit_note_guard() line 6 at RAISE
+--- FAIL expected: refund line quantity beyond the sold quantity (1 left, ask 2)
+INSERT 0 1
+ERROR:  REFUND_EXCEEDS_QUANTITY
+CONTEXT:  PL/pgSQL function fn_credit_note_line_cap() line 9 at RAISE
+--- FAIL expected: refund amount beyond the line total (quantity fine, money too high)
+ERROR:  REFUND_EXCEEDS_AMOUNT
+CONTEXT:  PL/pgSQL function fn_credit_note_line_cap() line 10 at RAISE
+--- FAIL expected: refund tax beyond the original tax of the line
+ERROR:  REFUND_EXCEEDS_TAX
+CONTEXT:  PL/pgSQL function fn_credit_note_line_cap() line 12 at RAISE
+--- FAIL expected: refund line whose total is not taxable + tax
+ERROR:  new row for relation "credit_note_lines" violates check constraint "credit_note_lines_check"
+DETAIL:  Failing row contains (8b84c24f-f469-423c-8c27-f7c1b0f0b3ff, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000c2, 00000000-0000-0000-0000-00000000c101, 1.000, 100.00, 0.00, 100.00, 5.00, 100.00, f).
+--- FAIL expected: line of another bill on this credit note
+ERROR:  CREDIT_LINE_OTHER_BILL
+CONTEXT:  PL/pgSQL function fn_credit_note_line_cap() line 6 at RAISE
+--- OK expected: remaining unit of line 1 refunded (cumulative equals the original line)
+INSERT 0 1
+--- FAIL expected: line 1 already fully refunded, one more unit
+INSERT 0 1
+ERROR:  REFUND_EXCEEDS_QUANTITY
+CONTEXT:  PL/pgSQL function fn_credit_note_line_cap() line 9 at RAISE
+--- OK expected: ON_ACCOUNT refund with a customer and its ledger entry
+INSERT 0 1
+INSERT 0 1
+--- FAIL expected: credit note edited
+ERROR:  APPEND_ONLY_TABLE credit_notes cannot be UPDATE
+CONTEXT:  PL/pgSQL function fn_append_only() line 2 at RAISE
+--- FAIL expected: credit note deleted
+ERROR:  APPEND_ONLY_TABLE credit_notes cannot be DELETE
+CONTEXT:  PL/pgSQL function fn_append_only() line 2 at RAISE
+--- FAIL expected: credit note line edited
+ERROR:  APPEND_ONLY_TABLE credit_note_lines cannot be UPDATE
+CONTEXT:  PL/pgSQL function fn_append_only() line 2 at RAISE
+--- FAIL expected: credit note line deleted
+ERROR:  APPEND_ONLY_TABLE credit_note_lines cannot be DELETE
+CONTEXT:  PL/pgSQL function fn_append_only() line 2 at RAISE
+--- FAIL expected: credit note tax row deleted
+ERROR:  APPEND_ONLY_TABLE credit_note_line_taxes cannot be DELETE
+CONTEXT:  PL/pgSQL function fn_append_only() line 2 at RAISE
+--- FAIL expected: void a bill that already has a credit note
+ERROR:  BILL_HAS_CREDIT_NOTES
+CONTEXT:  PL/pgSQL function fn_bill_void_guard() line 4 at RAISE
+--- OK expected: bill without credit notes can still be voided
+UPDATE 1
+=== 14 central menu
+--- OK expected: every outlet got a version row by the migration
+DO
+--- FAIL expected: version 0
+ERROR:  new row for relation "outlet_menu_versions" violates check constraint "outlet_menu_versions_version_check"
+DETAIL:  Failing row contains (00000000-0000-0000-0000-0000000000a1, 00000000-0000-0000-0000-000000000001, 0, 2026-11-27 16:23:08.140198+00).
+--- OK expected: bump version
+UPDATE 1
+--- OK expected: publish run to one outlet
+INSERT 0 1
+--- FAIL expected: publish run without targets
+ERROR:  new row for relation "menu_publish_runs" violates check constraint "menu_publish_runs_target_outlet_ids_check"
+DETAIL:  Failing row contains (909dfd42-4a01-42bb-a7f0-cdd7ed1ae105, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, {}, ADD_AND_UPDATE, 00000000-0000-0000-0000-0000000000f1, {}, 2026-11-27 16:23:08.943634+00).
+--- FAIL expected: unknown publish mode
+ERROR:  new row for relation "menu_publish_runs" violates check constraint "menu_publish_runs_mode_check"
+DETAIL:  Failing row contains (0f3943a7-776c-4eca-baba-22a86bca8ce4, 00000000-0000-0000-0000-000000000001, 00000000-0000-0000-0000-0000000000a1, {00000000-0000-0000-0000-0000000000a2}, REPLACE_ALL, 00000000-0000-0000-0000-0000000000f1, {}, 2026-11-27 16:23:08.94389+00).
+--- FAIL expected: category copied twice from the same master category
+INSERT 0 1
+ERROR:  duplicate key value violates unique constraint "ux_menu_categories_source"
+DETAIL:  Key (outlet_id, source_category_id)=(00000000-0000-0000-0000-0000000000a2, 00000000-0000-0000-0000-0000000000c1) already exists.
+--- OK expected: printer drawer-kick flag
+INSERT 0 1

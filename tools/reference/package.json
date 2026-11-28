@@ -1,0 +1,9 @@
+{
+  "name": "galla-offline-reference",
+  "private": true,
+  "type": "module",
+  "version": "1.0.0",
+  "description": "JS port of the billing rules used by offline terminals; must reproduce golden_bill_vectors.json exactly",
+  "scripts": { "test": "node test_golden.mjs" },
+  "dependencies": { "decimal.js": "10.4.3" }
+}

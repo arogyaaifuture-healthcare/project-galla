@@ -1,0 +1,36 @@
+name: ci
+on: [push, pull_request]
+jobs:
+  database:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq postgresql postgresql-contrib
+      - name: 848 database cases + 14 report checks
+        run: sudo env "PATH=$(ls -d /usr/lib/postgresql/*/bin | tail -1):$PATH" bash tools/db_tests/run_db_tests.sh
+  python-reference:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install pytest hypothesis python-dateutil phonenumbers && pytest -q tools/reference
+  frontend:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: frontend } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm ci && npx tsc -b && npm run build
+      - run: cd ../tools/reference && npm install && node test_golden.mjs
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 21, cache: maven }
+      - name: Docker API version for Testcontainers (Docker 29 needs >= 1.40)
+        run: echo 'api.version=1.44' > ~/.docker-java.properties
+      - run: mvn -B verify
+        working-directory: backend

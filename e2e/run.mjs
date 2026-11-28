@@ -37,7 +37,7 @@ await owner.getByRole('button', { name: 'Activity' }).click(); await expectText(
 
 // 4. super admin sets UPI id and price
 await admin.goto(BASE); await admin.getByRole('button', { name: /Platform sign-in/ }).click()
-await admin.getByLabel('Email').fill('root@galla.test'); await admin.getByLabel('Password').fill('super-admin-pass-1'); await admin.getByRole('button', { name: 'Sign in' }).click()
+await admin.getByLabel('Email').fill('root@galla.test'); await admin.getByLabel('Password').fill('super-admin-pass-1'); await admin.getByRole('button', { name: 'Sign in', exact: true }).click()
 await admin.getByRole('button', { name: 'Settings' }).click()
 await admin.getByLabel(/Your UPI ID/).fill('galla@okbank'); await admin.getByLabel(/Name shown in the UPI app/).fill('Galla Tech'); await admin.getByRole('button', { name: 'Save' }).click(); await expectText(admin, 'Saved.')
 await admin.getByRole('button', { name: 'Plans' }).click()
@@ -47,7 +47,7 @@ step('super admin sets UPI id and prices')
 // 5. trial ends -> restaurant is locked until it pays
 sql(`update subscriptions set trial_ends_at = now() - interval '10 days' where tenant_id = (select tenant_id from users where email='${email}')`)
 await owner.getByRole('button', { name: 'Sign out' }).click()
-await owner.getByLabel('Email').fill(email); await owner.getByLabel('Password').fill(PW); await owner.getByRole('button', { name: 'Sign in' }).click()
+await owner.getByLabel('Email').fill(email); await owner.getByLabel('Password').fill(PW); await owner.getByRole('button', { name: 'Sign in', exact: true }).click()
 await expectText(owner, 'Subscription ended'); step('after the trial the restaurant is locked')
 
 // 6. restaurant pays by UPI QR
@@ -64,7 +64,7 @@ await admin.getByRole('button', { name: 'Confirm' }).click(); await expectText(a
 
 // 8. access is back
 await owner.getByRole('button', { name: 'Sign out' }).click()
-await owner.getByLabel('Email').fill(email); await owner.getByLabel('Password').fill(PW); await owner.getByRole('button', { name: 'Sign in' }).click()
+await owner.getByLabel('Email').fill(email); await owner.getByLabel('Password').fill(PW); await owner.getByRole('button', { name: 'Sign in', exact: true }).click()
 await expectText(owner, 'Paneer Tikka'); step('access restored after payment')
 
 // 9. phone-size layout has no sideways scroll
